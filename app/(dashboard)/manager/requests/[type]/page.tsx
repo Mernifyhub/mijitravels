@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
@@ -8,47 +9,51 @@ import {
   Wallet, Clock, Plane, Eye, AlertCircle, UserCheck, Lock, Unlock,
 } from "lucide-react";
 
-const TYPE_MAP: Record<string, {
-  title: string;
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface TypeMapEntry {
+  title:  string;
   action: string;
-  color: string;
-  bg: string;
-  icon: JSX.Element;
-}> = {
+  color:  string;
+  bg:     string;
+  icon:   React.ReactElement;
+}
+
+// ─── Configs ─────────────────────────────────────────────────────────────────
+const TYPE_MAP: Record<string, TypeMapEntry> = {
   issue: {
-    title: "Issue Requests",
+    title:  "Issue Requests",
     action: "Make Issue",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50 border-emerald-200",
-    icon: <Ticket size={20} />,
+    color:  "text-emerald-600",
+    bg:     "bg-emerald-50 border-emerald-200",
+    icon:   <Ticket    size={20} />,
   },
   reissue: {
-    title: "Reissue Requests",
+    title:  "Reissue Requests",
     action: "Process Reissue",
-    color: "text-indigo-600",
-    bg: "bg-indigo-50 border-indigo-200",
-    icon: <RefreshCw size={20} />,
+    color:  "text-indigo-600",
+    bg:     "bg-indigo-50 border-indigo-200",
+    icon:   <RefreshCw size={20} />,
   },
   cancel: {
-    title: "Cancel Requests",
+    title:  "Cancel Requests",
     action: "Approve Cancel",
-    color: "text-rose-600",
-    bg: "bg-rose-50 border-rose-200",
-    icon: <XCircle size={20} />,
+    color:  "text-rose-600",
+    bg:     "bg-rose-50 border-rose-200",
+    icon:   <XCircle   size={20} />,
   },
   void: {
-    title: "Void Requests",
+    title:  "Void Requests",
     action: "Approve Void",
-    color: "text-amber-600",
-    bg: "bg-amber-50 border-amber-200",
-    icon: <Ban size={20} />,
+    color:  "text-amber-600",
+    bg:     "bg-amber-50 border-amber-200",
+    icon:   <Ban       size={20} />,
   },
   refund: {
-    title: "Refund Requests",
+    title:  "Refund Requests",
     action: "Process Refund",
-    color: "text-purple-600",
-    bg: "bg-purple-50 border-purple-200",
-    icon: <Wallet size={20} />,
+    color:  "text-purple-600",
+    bg:     "bg-purple-50 border-purple-200",
+    icon:   <Wallet    size={20} />,
   },
 };
 
@@ -59,16 +64,17 @@ const STATUS_COLOR: Record<string, string> = {
   REJECTED:   "bg-red-100    text-red-700    border-red-200",
 };
 
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminRequestListPage() {
   const router = useRouter();
   const params = useParams();
   const type   = (params.type as string)?.toLowerCase();
 
-  const [requests, setRequests]         = useState<any[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState<string | null>(null);
+  const [requests,      setRequests]      = useState<any[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [assigningId, setAssigningId]   = useState<string | null>(null);
+  const [assigningId,   setAssigningId]   = useState<string | null>(null);
 
   const current = TYPE_MAP[type] || TYPE_MAP.issue;
 
@@ -101,7 +107,6 @@ export default function AdminRequestListPage() {
       const data = await apiClient(
         `/admin/requests?type=${type.toUpperCase()}`
       );
-
       if (Array.isArray(data)) {
         setRequests(data);
       } else if (Array.isArray(data?.data)) {
@@ -128,7 +133,7 @@ export default function AdminRequestListPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
-  // ── Assign handler ──
+  // ── Assign ──
   const handleAssign = async (requestId: string) => {
     setAssigningId(requestId);
     try {
@@ -152,12 +157,11 @@ export default function AdminRequestListPage() {
       console.error("Assign error:", err?.message || err);
       alert(err?.message || "Failed to assign");
     } finally {
-      // ✅ always reset
       setAssigningId(null);
     }
   };
 
-  // ── Release handler ──
+  // ── Release ──
   const handleRelease = async (requestId: string) => {
     setAssigningId(requestId);
     try {
@@ -176,22 +180,22 @@ export default function AdminRequestListPage() {
       console.error("Release error:", err?.message || err);
       alert(err?.message || "Failed to release");
     } finally {
-      // ✅ always reset
       setAssigningId(null);
     }
   };
 
-  // ── Render ──
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
+        {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition"
+              className="w-10 h-10 rounded-xl bg-white border border-gray-200
+                flex items-center justify-center hover:bg-gray-50 transition"
             >
               <ArrowLeft size={18} />
             </button>
@@ -209,16 +213,19 @@ export default function AdminRequestListPage() {
           <button
             onClick={fetchRequests}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200
+              rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50
+              transition disabled:opacity-50"
           >
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
             Refresh
           </button>
         </div>
 
-        {/* Error */}
+        {/* ── Error ── */}
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-4
+            flex items-center gap-3">
             <AlertCircle size={20} className="text-red-500 shrink-0" />
             <div>
               <p className="text-red-700 text-sm font-medium">{error}</p>
@@ -232,7 +239,7 @@ export default function AdminRequestListPage() {
           </div>
         )}
 
-        {/* Table */}
+        {/* ── Table ── */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
           {loading ? (
             <div className="p-16 flex items-center justify-center">
@@ -240,7 +247,8 @@ export default function AdminRequestListPage() {
             </div>
           ) : !Array.isArray(requests) || requests.length === 0 ? (
             <div className="p-16 text-center">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border ${current.bg}`}>
+              <div className={`w-16 h-16 rounded-full flex items-center
+                justify-center mx-auto mb-4 border ${current.bg}`}>
                 <span className={current.color}>{current.icon}</span>
               </div>
               <p className="text-gray-500 font-medium">
@@ -261,7 +269,8 @@ export default function AdminRequestListPage() {
                     ].map((h) => (
                       <th
                         key={h}
-                        className="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                        className="px-5 py-3.5 text-left text-xs font-semibold
+                          text-gray-500 uppercase tracking-wider"
                       >
                         {h}
                       </th>
@@ -284,11 +293,14 @@ export default function AdminRequestListPage() {
                     return (
                       <tr
                         key={req.id}
-                        className={`hover:bg-gray-50 transition ${
-                          isAssignedToMe    ? "bg-emerald-50/30" :
-                          isAssignedToOther ? "bg-orange-50/30"  :
-                          req.status === "PROCESSING" ? "bg-blue-50/40" : ""
-                        }`}
+                        className={`hover:bg-gray-50 transition
+                          ${isAssignedToMe
+                            ? "bg-emerald-50/30"
+                            : isAssignedToOther
+                            ? "bg-orange-50/30"
+                            : req.status === "PROCESSING"
+                            ? "bg-blue-50/40"
+                            : ""}`}
                       >
                         {/* Booking ID */}
                         <td className="px-5 py-4 font-semibold text-gray-800 text-sm">
@@ -296,7 +308,8 @@ export default function AdminRequestListPage() {
                         </td>
 
                         {/* PNR */}
-                        <td className="px-5 py-4 font-mono font-semibold text-[#021f3b] text-sm">
+                        <td className="px-5 py-4 font-mono font-semibold
+                          text-[#021f3b] text-sm">
                           {req.booking?.pnr || "—"}
                         </td>
 
@@ -314,7 +327,8 @@ export default function AdminRequestListPage() {
                         </td>
 
                         {/* Remarks */}
-                        <td className="px-5 py-4 text-gray-500 text-sm max-w-[140px] truncate">
+                        <td className="px-5 py-4 text-gray-500 text-sm
+                          max-w-[140px] truncate">
                           {req.remarks || "—"}
                         </td>
 
@@ -323,8 +337,11 @@ export default function AdminRequestListPage() {
                           <div className="flex items-center gap-1.5 text-gray-500 text-sm">
                             <Clock size={13} />
                             {new Date(req.createdAt).toLocaleDateString("en-US", {
-                              day: "2-digit", month: "short", year: "numeric",
-                              hour: "2-digit", minute: "2-digit",
+                              day:    "2-digit",
+                              month:  "short",
+                              year:   "numeric",
+                              hour:   "2-digit",
+                              minute: "2-digit",
                             })}
                           </div>
                         </td>
@@ -335,28 +352,34 @@ export default function AdminRequestListPage() {
                             <button
                               onClick={() => handleAssign(req.id)}
                               disabled={isThisAssigning}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#021f3b] text-white rounded-full text-xs font-semibold hover:bg-[#0a3a6b] transition active:scale-95 disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-2.5 py-1
+                                bg-[#021f3b] text-white rounded-full text-xs font-semibold
+                                hover:bg-[#0a3a6b] transition active:scale-95
+                                disabled:opacity-50"
                             >
                               {isThisAssigning
-                                ? <Loader2 size={11} className="animate-spin" />
-                                : <UserCheck size={11} />
-                              }
+                                ? <Loader2   size={11} className="animate-spin" />
+                                : <UserCheck size={11} />}
                               Assign
                             </button>
                           ) : isAssignedToMe ? (
                             <button
                               onClick={() => handleRelease(req.id)}
                               disabled={isThisAssigning}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-500 text-white rounded-full text-xs font-semibold hover:bg-orange-600 transition active:scale-95 disabled:opacity-50"
+                              className="inline-flex items-center gap-1 px-2.5 py-1
+                                bg-orange-500 text-white rounded-full text-xs font-semibold
+                                hover:bg-orange-600 transition active:scale-95
+                                disabled:opacity-50"
                             >
                               {isThisAssigning
                                 ? <Loader2 size={11} className="animate-spin" />
-                                : <Unlock size={11} />
-                              }
+                                : <Unlock  size={11} />}
                               Release
                             </button>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold border border-orange-200">
+                            <span className="inline-flex items-center gap-1 px-2 py-1
+                              bg-orange-100 text-orange-700 rounded-full text-xs
+                              font-semibold border border-orange-200">
                               <Lock size={11} />
                               {assignedName.length > 8
                                 ? assignedName.slice(0, 8) + ".."
@@ -367,15 +390,20 @@ export default function AdminRequestListPage() {
 
                         {/* Status */}
                         <td className="px-5 py-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLOR[req.status] || STATUS_COLOR.PENDING}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1
+                            rounded-full text-xs font-semibold border
+                            ${STATUS_COLOR[req.status] || STATUS_COLOR.PENDING}`}
+                          >
                             {req.status === "PROCESSING" && (
                               <RefreshCw size={12} className="animate-spin" />
                             )}
                             {req.status}
                             {req.status === "PROCESSING" && (
                               <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                                <span className="animate-ping absolute inline-flex
+                                  h-full w-full rounded-full bg-blue-400 opacity-75" />
+                                <span className="relative inline-flex rounded-full
+                                  h-2 w-2 bg-blue-500" />
                               </span>
                             )}
                           </span>
@@ -387,16 +415,15 @@ export default function AdminRequestListPage() {
                             onClick={() =>
                               router.push(`/manager/requests/${type}/${req.id}`)
                             }
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition active:scale-95 ${
-                              isAssignedToOther
+                            className={`flex items-center gap-1.5 px-3 py-1.5
+                              rounded-lg text-xs font-medium transition active:scale-95
+                              ${isAssignedToOther
                                 ? "bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100"
-                                : "bg-[#021f3b] text-white hover:bg-[#0a3a6b]"
-                            }`}
+                                : "bg-[#021f3b] text-white hover:bg-[#0a3a6b]"}`}
                           >
                             {isAssignedToOther
                               ? <><Lock size={12} /> View</>
-                              : <><Eye size={12} /> {current.action}</>
-                            }
+                              : <><Eye  size={12} /> {current.action}</>}
                           </button>
                         </td>
                       </tr>

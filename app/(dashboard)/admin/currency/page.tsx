@@ -1,5 +1,4 @@
-// app/admin/currency/page.tsx
-
+// app/(dashboard)/admin/currency/page.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -7,11 +6,11 @@ import {
   Plus, Search, Edit2, Trash2, ToggleLeft, ToggleRight,
   Loader2, CheckCircle2, XCircle, ArrowRight,
   DollarSign, RefreshCw, Globe, TrendingUp,
-  Calculator, Banknote, Info, 
+  Calculator, Banknote, Info,
   ChevronRight, Clock, X,
   Layers,
 } from "lucide-react";
-import { SUBDOMAIN_CONFIG } from "@/lib/currency";
+import { SUBDOMAIN_CONFIG, type SubdomainConfig } from "@/lib/currency";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Rate {
@@ -98,11 +97,11 @@ export default function CurrencyManagement() {
   });
 
   // ── UI state ──
-  const [search,         setSearch]         = useState("");
-  const [toast,          setToast]          = useState<{ msg: string; ok: boolean } | null>(null);
-  const [userId,         setUserId]         = useState("");
-  const [showConverter,  setShowConverter]  = useState(false);
-  const [expandedCard,   setExpandedCard]   = useState<string | null>(null);
+  const [search,        setSearch]        = useState("");
+  const [toast,         setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
+  const [userId,        setUserId]        = useState("");
+  const [showConverter, setShowConverter] = useState(false);
+  const [expandedCard,  setExpandedCard]  = useState<string | null>(null);
 
   // ── Converter ──
   const [convAmount,  setConvAmount]  = useState("500");
@@ -110,7 +109,9 @@ export default function CurrencyManagement() {
   const [converting,  setConverting]  = useState(false);
 
   // USD sell rate (used for preview calculations)
-  const usdSarRate = baseRates.find(r => r.fromCurrency === "USD")?.sellRate ?? 3.75;
+  const usdSarRate = baseRates.find(
+    r => r.fromCurrency === "USD" && r.isActive
+  )?.sellRate ?? 3.75;
 
   // ─── Init ─────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -124,18 +125,21 @@ export default function CurrencyManagement() {
   };
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-  const setField     = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
-  const setBaseField = (k: string, v: any) => setBaseForm(p => ({ ...p, [k]: v }));
+  const setField     = (k: string, v: unknown) => setForm(p => ({ ...p, [k]: v }));
+  const setBaseField = (k: string, v: unknown) => setBaseForm(p => ({ ...p, [k]: v }));
 
   // ─── Fetch subdomain rates ────────────────────────────────────────────────
   const fetchRates = useCallback(async () => {
     setLoading(true);
     try {
-      const p   = new URLSearchParams();
+      const p = new URLSearchParams();
       if (search) p.set("search", search);
       const res  = await fetch(`/api/admin/currency?${p}`);
       const data = await res.json();
-      setRates(Array.isArray(data.rates) ? data.rates : Array.isArray(data) ? data : []);
+      setRates(
+        Array.isArray(data.rates) ? data.rates :
+        Array.isArray(data)       ? data        : []
+      );
     } catch {
       showToast("Failed to load rates", false);
     } finally {
@@ -157,10 +161,9 @@ export default function CurrencyManagement() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchRates();
-    fetchBaseRates();
-  }, [fetchRates, fetchBaseRates]);
+  // ── Split useEffect so base rates don't refetch on search change ──
+  useEffect(() => { fetchRates(); },     [fetchRates]);
+  useEffect(() => { fetchBaseRates(); }, [fetchBaseRates]);
 
   // ─── Base Rate CRUD ───────────────────────────────────────────────────────
   const resetBaseForm = () => {
@@ -182,7 +185,7 @@ export default function CurrencyManagement() {
 
   const handleSaveBase = async () => {
     const { fromCurrency, buyRate, sellRate } = baseForm;
-    if (!fromCurrency)                         { showToast("Currency required", false); return; }
+    if (!fromCurrency)                          { showToast("Currency required",        false); return; }
     if (!buyRate  || parseFloat(buyRate)  <= 0) { showToast("Valid buy rate required",  false); return; }
     if (!sellRate || parseFloat(sellRate) <= 0) { showToast("Valid sell rate required", false); return; }
 
@@ -196,7 +199,12 @@ export default function CurrencyManagement() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...baseForm, createdById: userId }),
+        body: JSON.stringify({
+          ...baseForm,
+          buyRate:      parseFloat(buyRate),
+          sellRate:     parseFloat(sellRate),
+          createdById:  userId,
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -215,11 +223,10 @@ export default function CurrencyManagement() {
   };
 
   const toggleBaseActive = async (id: string, current: boolean) => {
-    // Optimistic update
     setBaseRates(prev => prev.map(r => r.id === id ? { ...r, isActive: !current } : r));
     try {
       const res = await fetch(`/api/admin/currency/base-rates/${id}`, {
-        method:  "PUT",
+        method:  "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !current }),
       });
@@ -262,7 +269,8 @@ export default function CurrencyManagement() {
     setEditId(null);
   };
 
-  const selectPreset = (sub: typeof SUBDOMAIN_CONFIG[0]) => {
+  // ✅ Fix: use (typeof SUBDOMAIN_CONFIG)[number] so all items are accepted
+  const selectPreset = (sub: SubdomainConfig) => {
     setForm(prev => ({
       ...prev,
       subdomain:    sub.subdomain,
@@ -292,9 +300,9 @@ export default function CurrencyManagement() {
   };
 
   const handleSave = async () => {
-    if (!form.subdomain)                          { showToast("Select a country", false);       return; }
-    if (!form.currencyCode)                       { showToast("Currency code required", false); return; }
-    if (!form.rate || parseFloat(form.rate) <= 0) { showToast("Enter a valid rate", false);     return; }
+    if (!form.subdomain)                          { showToast("Select a country",        false); return; }
+    if (!form.currencyCode)                       { showToast("Currency code required",  false); return; }
+    if (!form.rate || parseFloat(form.rate) <= 0) { showToast("Enter a valid rate",      false); return; }
 
     setSaving(true);
     try {
@@ -303,7 +311,10 @@ export default function CurrencyManagement() {
       const res    = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          rate: parseFloat(form.rate),
+        }),
       });
       const data = await res.json();
       if (!res.ok) { showToast(data.error || "Failed", false); return; }
@@ -322,7 +333,7 @@ export default function CurrencyManagement() {
     setRates(prev => prev.map(r => r.id === id ? { ...r, isActive: !current } : r));
     try {
       const res = await fetch(`/api/admin/currency/${id}`, {
-        method:  "PUT",
+        method:  "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !current }),
       });
@@ -407,7 +418,7 @@ export default function CurrencyManagement() {
             rounded-xl shadow-2xl border text-sm font-bold
             ${toast.ok
               ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-              : "bg-red-50    border-red-200    text-red-700"}`}
+              : "bg-red-50 border-red-200 text-red-700"}`}
           >
             {toast.ok ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
             {toast.msg}
@@ -581,7 +592,6 @@ export default function CurrencyManagement() {
                       hover:shadow-sm hover:border-gray-200
                       ${!r.isActive ? "opacity-40 border-gray-100" : "border-gray-100"}`}
                   >
-                    {/* Row 1 — flag + code + actions */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <span className="text-lg">{r.flag}</span>
@@ -590,7 +600,6 @@ export default function CurrencyManagement() {
                           {r.fromCurrency}
                         </span>
                       </div>
-                      {/* Action buttons — visible on hover */}
                       <div className="flex items-center gap-0.5
                         opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -630,7 +639,6 @@ export default function CurrencyManagement() {
                       </div>
                     </div>
 
-                    {/* Sell rate (primary) */}
                     <p className="text-base font-black text-gray-800">
                       {Number(r.sellRate).toFixed(4)}
                     </p>
@@ -706,8 +714,7 @@ export default function CurrencyManagement() {
 
               {convResults && (
                 <div className="space-y-3">
-                  <div className="bg-white/10 rounded-xl p-4 flex items-center
-                    gap-4 flex-wrap">
+                  <div className="bg-white/10 rounded-xl p-4 flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🇺🇸</span>
                       <span className="text-xl font-black text-white">
@@ -1055,7 +1062,7 @@ export default function CurrencyManagement() {
                   </div>
                 )}
 
-                {/* Currency Code (manual) */}
+                {/* Currency Code */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[10px] font-black text-gray-400
@@ -1245,7 +1252,7 @@ export default function CurrencyManagement() {
                       Select Country
                     </label>
                     <div className="grid grid-cols-5 gap-1.5">
-                      {SUBDOMAIN_CONFIG.map(s => {
+                      {SUBDOMAIN_CONFIG.map((s: SubdomainConfig) => {
                         const exists   = rates.some(r => r.subdomain === s.subdomain);
                         const selected = form.subdomain === s.subdomain;
                         return (

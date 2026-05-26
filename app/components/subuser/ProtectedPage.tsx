@@ -1,15 +1,16 @@
 // app/components/ProtectedPage.tsx
 "use client";
 
+import React from "react"; // ← add করো
 import { usePermission } from "@/app/hooks/usePermission";
-import AccessDenied from "@/app/components/AccessDenied";
+import AccessDenied from "@/app/components/subuser/AccessDenied";
 import AgentTopBar from "@/app/components/agent/AgentTopBar";
 
 interface ProtectedPageProps {
-  children: React.ReactNode;
-  permission?: string;         // e.g. "deposits.view"
-  allowedRoles?: string[];     // e.g. ["USER", "OPERATOR"]
-  title?: string;
+  children:       React.ReactNode;
+  permission?:    string;
+  allowedRoles?:  string[];
+  title?:         string;
 }
 
 export default function ProtectedPage({
@@ -62,7 +63,7 @@ export default function ProtectedPage({
       <div className="min-h-screen bg-gray-50">
         <AgentTopBar />
         <AccessDenied
-          title={`Role Access Required`}
+          title="Role Access Required"
           message={`This page requires ${allowedRoles.join(" or ")} role.`}
           currentRole={userInfo?.role}
           requiredRole={allowedRoles.join(", ")}

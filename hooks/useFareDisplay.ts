@@ -1,9 +1,9 @@
+// hooks/useFareDisplay.ts
 "use client";
 
 import { useCallback, useMemo } from "react";
 import {
   convertCurrency,
-  convertFare,
   convertFareToDisplay,
   getDisplayCurrency,
   type DisplayFare,
@@ -15,9 +15,12 @@ export function useFareDisplay(fare?: FareBreakdown, hostname?: string) {
     return getDisplayCurrency(hostname);
   }, [hostname]);
 
+  // ✅ convertFare এর বদলে convertFareToDisplay use করো
+  // কারণ convertFare → FareBreakdown return করে
+  // কিন্তু convertFareToDisplay → DisplayFare return করে
   const convertFareFn = useCallback(
     (inputFare: FareBreakdown): DisplayFare => {
-      return convertFare(inputFare, displayCurrency);
+      return convertFareToDisplay(inputFare, displayCurrency);
     },
     [displayCurrency]
   );
@@ -49,9 +52,7 @@ export function useFareDisplay(fare?: FareBreakdown, hostname?: string) {
     displayCurrency,
     displayFare,
     convertAmount,
-
-    // backward compatibility
-    convertFare: convertFareFn,
-    convertFareToDisplay: convertFareToDisplayFn,
+    convertFare:           convertFareFn,
+    convertFareToDisplay:  convertFareToDisplayFn,
   };
-}
+} 

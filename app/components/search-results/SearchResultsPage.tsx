@@ -7,47 +7,53 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { extractFareFromFlight, calculateFare } from "@/lib/fare";
 import { useFareDisplay } from "@/hooks/useFareDisplay";
 import { apiClient } from "@/lib/api";
-import {getPrice,formatMoney,getDurationMinutes,type FlightData,type SortOption,} from "./helpers";
-import { Navbar } from "./Navbar";
-import { FilterSidebar } from "./FilterSidebar";
-import { SortBar } from "./SortBar";
-import { FlightList } from "./FlightList";
-import { AIRLINE_FILTERS } from "./airlineData"; 
+import {
+  getPrice, formatMoney, getDurationMinutes,
+  type FlightData, type SortOption,
+} from "./helpers";
+import { Navbar }         from "./Navbar";
+import { FilterSidebar }  from "./FilterSidebar";
+import { SortBar }        from "./SortBar";
+import { FlightList }     from "./FlightList";
+import { AIRLINE_FILTERS } from "./airlineData";
 
 export default function SearchResultsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();// URLSearchParams instance for reading query params
-  const [flights, setFlights] = useState<FlightData[]>([]);
-  const [expandedFlight, setExpandedFlight] = useState<string | null>(null);
-  const [selectedAirline, setSelectedAirline] = useState("ALL");
-  const [priceRange, setPriceRange] = useState(10000);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedStop, setSelectedStop] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>("cheapest");
-  const [selectedBaggage, setSelectedBaggage] = useState<string | null>(null);
-  const [selectedRefundability, setSelectedRefundability] = useState<string | null>(null);
-  const { currency: displayCurrency, convertFare } = useFareDisplay();
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+
+  const [flights,                setFlights]                = useState<FlightData[]>([]);
+  const [expandedFlight,         setExpandedFlight]         = useState<string | null>(null);
+  const [selectedAirline,        setSelectedAirline]        = useState("ALL");
+  const [priceRange,             setPriceRange]             = useState(10000);
+  const [isLoading,              setIsLoading]              = useState(true);
+  const [selectedStop,           setSelectedStop]           = useState<string | null>(null);
+  const [selectedTime,           setSelectedTime]           = useState<string | null>(null);
+  const [sortBy,                 setSortBy]                 = useState<SortOption>("cheapest");
+  const [selectedBaggage,        setSelectedBaggage]        = useState<string | null>(null);
+  const [selectedRefundability,  setSelectedRefundability]  = useState<string | null>(null);
+
+  // ✅ Fixed — use displayCurrency directly (no alias)
+  const { displayCurrency, convertFare } = useFareDisplay();
 
   // ==================== FETCH ====================
 
-  useEffect(() => {// Fetch flight data whenever search parameters change
+  useEffect(() => {
     const fetchFlights = async () => {
       setIsLoading(true);
       try {
-        const controller = new AbortController();//JavaScript/browser built-in class to control and cancel fetch requests
-        const timeoutId = setTimeout(() => controller.abort(), 60000);// 60-second timeout to prevent hanging requests
-        
-        const params = new URLSearchParams(searchParams.toString());// Clone to modify Fetch API doesn't allow direct mutation of searchParams, so we create a new instance
+        const controller = new AbortController();
+        const timeoutId  = setTimeout(() => controller.abort(), 60000);
+
+        const params = new URLSearchParams(searchParams.toString());
         if (!params.get("provider")) params.set("provider", "all");
 
         const data = await apiClient(
-          `/flights/search?${params.toString()}`,// Fetch flight data based on current search parameters, with abort signal for timeout
+          `/flights/search?${params.toString()}`,
           { signal: controller.signal } as RequestInit
         );
         clearTimeout(timeoutId);
 
-        if (data.meta?.isFallback) console.warn("⚠️ Showing fallback flights");// If API indicates these are fallback results, log a warning (could be used to trigger UI indicators in the future)
+        if (data.meta?.isFallback) console.warn("⚠️ Showing fallback flights");
 
         const flightData = data.data || [];
         setFlights(flightData);
@@ -69,7 +75,7 @@ export default function SearchResultsPage() {
     fetchFlights();
   }, [searchParams]);
 
-  useEffect(() => {// It use only for setting default provider=all if not present in URL.Just URL Normalization to ensure consistent behavior across the app. It does not trigger a new fetch since the first useEffect already handles that based on searchParams changes.
+  useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
     if (!params.get("provider")) {
       params.set("provider", "all");
@@ -123,12 +129,11 @@ export default function SearchResultsPage() {
     if (selectedStop) {
       result = result.filter((flight) => {
         const maxStops = flight.itineraries.reduce(
-          (max, it) => Math.max(max, it.segments.length - 1),
-          0
+          (max, it) => Math.max(max, it.segments.length - 1), 0
         );
-        if (selectedStop === "Non-stop") return maxStops === 0;
-        if (selectedStop === "1 Stop") return maxStops === 1;
-        if (selectedStop === "2+ Stops") return maxStops >= 2;
+        if (selectedStop === "Non-stop")  return maxStops === 0;
+        if (selectedStop === "1 Stop")    return maxStops === 1;
+        if (selectedStop === "2+ Stops")  return maxStops >= 2;
         return true;
       });
     }
@@ -138,7 +143,7 @@ export default function SearchResultsPage() {
       result = result.filter((flight) => {
         const raw = flight?.baggageInfo?.checkedRaw || 0;
         if (selectedBaggage === "With baggage") return raw > 0;
-        if (selectedBaggage === "No baggage") return raw === 0;
+        if (selectedBaggage === "No baggage")   return raw === 0;
         return true;
       });
     }
@@ -147,7 +152,7 @@ export default function SearchResultsPage() {
     if (selectedRefundability) {
       result = result.filter((flight) => {
         const refundable = flight?.conditions?.refundable === true;
-        if (selectedRefundability === "Refundable") return refundable;
+        if (selectedRefundability === "Refundable")     return refundable;
         if (selectedRefundability === "Non-refundable") return !refundable;
         return true;
       });
@@ -158,13 +163,12 @@ export default function SearchResultsPage() {
       result = result.filter((flight) => {
         const hour = parseInt(
           flight.itineraries[0].segments[0].departure.at
-            ?.split("T")[1]
-            ?.slice(0, 2) || "0"
+            ?.split("T")[1]?.slice(0, 2) || "0"
         );
-        if (selectedTime === "Morning") return hour >= 6 && hour < 12;
+        if (selectedTime === "Morning")   return hour >= 6  && hour < 12;
         if (selectedTime === "Afternoon") return hour >= 12 && hour < 18;
-        if (selectedTime === "Evening") return hour >= 18 && hour < 24;
-        if (selectedTime === "Night") return hour >= 0 && hour < 6;
+        if (selectedTime === "Evening")   return hour >= 18 && hour < 24;
+        if (selectedTime === "Night")     return hour >= 0  && hour < 6;
         return true;
       });
     }
@@ -182,7 +186,7 @@ export default function SearchResultsPage() {
       result.sort((a, b) => {
         const score = (f: FlightData) => {
           const price = getPrice(f);
-          const mins = getDurationMinutes(f.itineraries[0].duration);
+          const mins  = getDurationMinutes(f.itineraries[0].duration);
           const stops = f.itineraries[0].segments.length - 1;
           return price * 0.4 + mins * 0.4 + stops * 100 * 0.2;
         };
@@ -192,14 +196,8 @@ export default function SearchResultsPage() {
 
     return result;
   }, [
-    flights,
-    selectedAirline,
-    priceRange,
-    selectedStop,
-    selectedBaggage,
-    selectedRefundability,
-    selectedTime,
-    sortBy,
+    flights, selectedAirline, priceRange, selectedStop,
+    selectedBaggage, selectedRefundability, selectedTime, sortBy,
   ]);
 
   // ==================== SORT BAR DATA ====================
@@ -207,21 +205,17 @@ export default function SearchResultsPage() {
   const sortBarData = useMemo(() => {
     if (flights.length === 0) return { cheapest: "—", fastest: "—" };
 
-    const cheapestFlight = [...flights].sort(
-      (a, b) => getPrice(a) - getPrice(b)
-    )[0];
-    const fareInput = extractFareFromFlight(cheapestFlight, {
-      adults: 1,
-      children: 0,
-      infants: 0,
+    const cheapestFlight = [...flights].sort((a, b) => getPrice(a) - getPrice(b))[0];
+    const fareInput      = extractFareFromFlight(cheapestFlight, {
+      adults: 1, children: 0, infants: 0,
     });
-    const converted = convertFare(calculateFare(fareInput));
-    const cheapestLabel = formatMoney(converted.grandTotal, converted.currency);
+    const converted      = convertFare(calculateFare(fareInput));
+    const cheapestLabel  = formatMoney(converted.grandTotal, converted.currency);
 
     const durations = flights.map((f) => {
       const mins = getDurationMinutes(f.itineraries[0].duration);
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
+      const h    = Math.floor(mins / 60);
+      const m    = mins % 60;
       return { total: mins, label: `${h}h ${m}m` };
     });
     const fastest = durations.reduce(
@@ -241,7 +235,7 @@ export default function SearchResultsPage() {
     flights.forEach((flight) => {
       flight.itineraries.forEach((it) => {
         it.segments.forEach((seg) => {
-          const code = seg.carrierCode;
+          const code  = seg.carrierCode;
           const price = getPrice(flight);
           if (!airlineMap.has(code) || price < airlineMap.get(code)!) {
             airlineMap.set(code, price);
@@ -253,9 +247,8 @@ export default function SearchResultsPage() {
     const allMin = Math.min(...Array.from(airlineMap.values()));
 
     return AIRLINE_FILTERS.map((af) => {
-      if (af.code === "ALL") return { ...af, price: String(allMin) };
-      if (airlineMap.has(af.code))
-        return { ...af, price: String(airlineMap.get(af.code)!) };
+      if (af.code === "ALL")          return { ...af, price: String(allMin) };
+      if (airlineMap.has(af.code))    return { ...af, price: String(airlineMap.get(af.code)!) };
       return af;
     });
   }, [flights]);

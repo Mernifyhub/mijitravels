@@ -1,96 +1,72 @@
-// app/admin/agents/[id]/ledger/page.tsx
+// app/(dashboard)/admin/agent/[id]/ledger/page.tsx
 "use client";
 
-// ============================================
-// IMPORTS - প্রতিটা কেন লাগছে
-// ============================================
-
-// React hooks:
-// useState   → component এর data store করতে (যেমন: entries, loading, page)
-// useMemo    → expensive calculation cache করতে (যেমন: page totals)
-// useCallback → function re-create না করতে (performance)
-// useRef     → DOM element বা timeout ধরে রাখতে
-// useEffect  → component load/update হলে কিছু করতে (যেমন: API call)
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-
-// Next.js:
-// useParams → URL থেকে [id] বের করতে (UUID)
-// useRouter → programmatically navigate করতে
-// Link      → page navigate করতে (back button এর জন্য)
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import React from "react";
 
-// Icons - প্রতিটা specific purpose এ ব্যবহার হয়
 import {
-  Search,          // 🔍 search input icon
-  Download,        // ⬇️ export button
-  Calendar,        // 📅 date column icon
-  ChevronLeft,     // ◀ pagination previous
-  ChevronRight,    // ▶ pagination next
-  ChevronsLeft,    // ◀◀ pagination first
-  ChevronsRight,   // ▶▶ pagination last
-  ArrowUp,         // ↑ sort ascending
-  ArrowDown,       // ↓ sort descending
-  FileText,        // 📄 invoice icon
-  Printer,         // 🖨 print button
-  RefreshCw,       // 🔄 refresh button
-  X,               // ✕ close/clear button
-  ChevronDown,     // ▽ dropdown arrow
-  Wallet,          // 💰 balance card icon
-  Receipt,         // 🧾 transaction icon
-  Eye,             // 👁 view details
-  MoreHorizontal,  // ⋯ more actions menu
-  Copy,            // 📋 copy button
-  CheckCircle2,    // ✅ success toast
-  XCircle,         // ❌ error/void icon
-  AlertCircle,     // ⚠ warning toast
-  FileSpreadsheet, // 📊 excel export icon
-  File,            // 📁 pdf export icon
-  RotateCcw,       // ↺ reset/refund icon
-  SlidersHorizontal, // ⚙ filter toggle icon
-  Plane,           // ✈ ticket type icon
-  Building2,       // 🏢 created by icon
-  ArrowDownLeft,   // ↙ credit indicator
-  ArrowUpRight,    // ↗ debit indicator
-  Info,            // ℹ info toast
-  Loader2,         // ⟳ loading spinner
-  Clock,           // ⏰ pending icon
-  ArrowLeft,       // ← back button
-  Users,           // 👥 agent icon
+  Search,
+  Download,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ArrowUp,
+  ArrowDown,
+  FileText,
+  Printer,
+  RefreshCw,
+  X,
+  ChevronDown,
+  Wallet,
+  Receipt,
+  Eye,
+  Copy,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  FileSpreadsheet,
+  File,
+  RotateCcw,
+  SlidersHorizontal,
+  Plane,
+  Building2,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Info,
+  Loader2,
+  Clock,
+  ArrowLeft,
 } from "lucide-react";
 
-// Animation library:
-// motion        → smooth enter/exit animations
-// AnimatePresence → animate elements when they appear/disappear
 import { motion, AnimatePresence } from "framer-motion";
 
-
 // ============================================
-// TYPES - Data এর shape define করা
+// TYPES
 // ============================================
 
-// প্রতিটা ledger entry (row) এর structure
-// API থেকে আসা data এই format এ হবে
 interface LedgerEntry {
-  id: string;        // unique identifier - প্রতিটা entry আলাদা করতে
-  date: string;      // কবে হয়েছে - "2024-01-15T10:30:00Z"
-  invoice: string;   // invoice number - "INV-2024-001"
-  booking: string;   // booking reference - "BK-12345"
-  spnr: string;      // system PNR - আমাদের system এর PNR
-  apnr: string;      // airline PNR - airline এর PNR
-  flight: string;    // flight date
-  desc: string;      // description - "Ticket Purchase - DAC to JED"
-  type: string;      // TICKET, REFUNDED, REISSUE, VOID, DEPOSIT etc
-  debit: number;     // টাকা গেছে (খরচ)
-  credit: number;    // টাকা এসেছে (জমা)
-  balance: number;   // এই entry র পরে balance কত
-  currency: string;  // SAR, USD etc
-  created: string;   // কে করেছে
-  status: string;    // COMPLETED, PENDING
-  source: string;    // কোথা থেকে হয়েছে
+  id: string;
+  date: string;
+  invoice: string;
+  booking: string;
+  spnr: string;
+  apnr: string;
+  flight: string;
+  desc: string;
+  type: string;
+  debit: number;
+  credit: number;
+  balance: number;
+  currency: string;
+  created: string;
+  status: string;
+  source: string;
 }
 
-// Agent info - header section show 
 interface AgentInfo {
   id: string;
   agentId: string;
@@ -98,75 +74,79 @@ interface AgentInfo {
   firstName?: string;
   lastName?: string;
   email: string;
-  phone?: string;           
+  phone?: string;
   balance: number;
   creditLimit: number;
-  usedLimit?: number;       
-  availableCredit?: number; 
-  status?: string;          
-  tier?: string;           
+  usedLimit?: number;
+  availableCredit?: number;
+  status?: string;
+  tier?: string;
 }
 
-// Toast notification এর shape
 interface Toast {
   id: string;
   message: string;
   type: "success" | "error" | "info" | "warning";
 }
 
-// API থেকে আসা response এর shape
-// Backend exactly এই format এ data পাঠাবে
 interface ApiResponse {
-  success: boolean;      // API call successful কিনা
-  data: LedgerEntry[];   // ledger entries array
-  total: number;         // মোট কতটা entry আছে (সব page মিলিয়ে)
-  page: number;          // এখন কোন page এ আছি
-  totalPages: number;    // মোট কত page
-  types: string[];       // available types for filter dropdown
-  agent: AgentInfo;      // agent এর info
-  stats: {               // summary numbers
-    currentBalance: number;    // এখনকার balance
-    totalCredit: number;       // সব credit যোগ
-    totalDebit: number;        // সব debit যোগ
-    transactionCount: number;  // মোট transaction সংখ্যা
+  success: boolean;
+  data: LedgerEntry[];
+  total: number;
+  page: number;
+  totalPages: number;
+  types: string[];
+  agent: AgentInfo;
+  stats: {
+    currentBalance: number;
+    totalCredit: number;
+    totalDebit: number;
+    transactionCount: number;
+    creditLimit?: number;
+    usedLimit?: number;
+    availableCredit?: number;
+    totalAvailable?: number;
   };
 }
 
+interface StatsState {
+  currentBalance: number;
+  totalCredit: number;
+  totalDebit: number;
+  transactionCount: number;
+  creditLimit: number;
+  usedLimit: number;
+  availableCredit: number;
+  totalAvailable: number;
+}
 
 // ============================================
-// HELPER FUNCTIONS - বারবার ব্যবহৃত utilities
+// HELPER FUNCTIONS
 // ============================================
 
-// Type badge এর color ও icon নির্ধারণ করে
-// table এ Type column এ ব্যবহার হয়
-// প্রতিটা type আলাদা color পায় - যেন চোখে লাগে
 function getTypeConfig(type: string) {
   const configs: Record<
     string,
-    { bg: string; text: string; icon: JSX.Element; iconColor: string }
+    { bg: string; text: string; icon: React.ReactElement; iconColor: string }
   > = {
-    // ✈ Ticket purchase - সবুজ (positive action)
     TICKET: {
       bg: "bg-emerald-50",
       text: "text-emerald-700",
       icon: <Plane size={12} />,
       iconColor: "text-emerald-600",
     },
-    // ↺ Refund - হলুদ (money back)
     REFUNDED: {
       bg: "bg-amber-50",
       text: "text-amber-700",
       icon: <RotateCcw size={12} />,
       iconColor: "text-amber-600",
     },
-    // 🔄 Reissue - নীল (modification)
     REISSUE: {
       bg: "bg-blue-50",
       text: "text-blue-700",
       icon: <RefreshCw size={12} />,
       iconColor: "text-blue-600",
     },
-    // ❌ Void - লাল (cancelled)
     VOID: {
       bg: "bg-rose-50",
       text: "text-rose-700",
@@ -185,21 +165,18 @@ function getTypeConfig(type: string) {
       icon: <XCircle size={12} />,
       iconColor: "text-rose-600",
     },
-    // 🧾 Service charge - বেগুনি
     SERVICE: {
       bg: "bg-purple-50",
       text: "text-purple-700",
       icon: <Receipt size={12} />,
       iconColor: "text-purple-600",
     },
-    // 💰 Deposit/Payment - আকাশি (money in)
     DEPOSIT: {
       bg: "bg-sky-50",
       text: "text-sky-700",
       icon: <Wallet size={12} />,
       iconColor: "text-sky-600",
     },
-    // ⏰ Pending - হলুদ (waiting)
     PENDING: {
       bg: "bg-amber-50",
       text: "text-amber-700",
@@ -207,7 +184,7 @@ function getTypeConfig(type: string) {
       iconColor: "text-amber-600",
     },
   };
-  // যদি unknown type আসে, default gray দেখাবে
+
   return (
     configs[type] || {
       bg: "bg-gray-50",
@@ -218,15 +195,13 @@ function getTypeConfig(type: string) {
   );
 }
 
-// টাকার format: 50000 → SAR 50,000
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-SA", {
     style: "currency",
     currency: "SAR",
     minimumFractionDigits: 0,
-  }).format(value);
+  }).format(value || 0);
 
-// Date format: "2024-01-15T10:30:00Z" → "15 Jan 2024"
 const formatDate = (dateStr: string) => {
   if (!dateStr) return "-";
   return new Date(dateStr).toLocaleDateString("en-GB", {
@@ -236,7 +211,6 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-// Time format: "2024-01-15T10:30:00Z" → "10:30"
 const formatTime = (dateStr: string) => {
   if (!dateStr) return "";
   return new Date(dateStr).toLocaleTimeString("en-GB", {
@@ -245,12 +219,9 @@ const formatTime = (dateStr: string) => {
   });
 };
 
-
 // ============================================
-// TOAST COMPONENT - Notification messages
+// TOAST COMPONENT
 // ============================================
-// Screen এর নিচে ডানে ছোট message দেখায়
-// Success = সবুজ, Error = লাল, Warning = হলুদ, Info = ধূসর
 
 const ToastContainer = ({
   toasts,
@@ -294,12 +265,9 @@ const ToastContainer = ({
   </div>
 );
 
-
 // ============================================
 // TRANSACTION DETAIL MODAL
 // ============================================
-// একটা entry তে click করলে সব detail দেখায়
-// Invoice, Amount, Date, PNR, Description, Created By
 
 const TransactionDetailModal = ({
   entry,
@@ -326,7 +294,7 @@ const TransactionDetailModal = ({
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
       >
-        {/* Modal Header - Invoice number ও type badge */}
+        {/* Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
           <div className="flex items-center gap-4">
             <div
@@ -354,9 +322,8 @@ const TransactionDetailModal = ({
           </button>
         </div>
 
-        {/* Modal Content */}
+        {/* Content */}
         <div className="p-6 space-y-4">
-          {/* Amount - বড় করে দেখায় */}
           <div
             className={`rounded-xl p-4 ${entry.credit > 0 ? "bg-emerald-50" : "bg-rose-50"}`}
           >
@@ -370,7 +337,6 @@ const TransactionDetailModal = ({
             </p>
           </div>
 
-          {/* Details Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-50 rounded-xl p-3">
               <p className="text-xs text-slate-500 mb-1">Date & Time</p>
@@ -418,13 +384,11 @@ const TransactionDetailModal = ({
             )}
           </div>
 
-          {/* Description */}
           <div className="bg-slate-50 rounded-xl p-3">
             <p className="text-xs text-slate-500 mb-1">Description</p>
             <p className="font-medium text-slate-800">{entry.desc}</p>
           </div>
 
-          {/* Created By */}
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
               <Building2 size={18} className="text-slate-600" />
@@ -464,11 +428,9 @@ const TransactionDetailModal = ({
   );
 };
 
-
 // ============================================
 // EXPORT DROPDOWN
 // ============================================
-// PDF, Excel, CSV, Print - export options
 
 const ExportDropdown = ({
   onExport,
@@ -478,7 +440,6 @@ const ExportDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // বাইরে click করলে close হবে
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -523,9 +484,7 @@ const ExportDropdown = ({
               {
                 format: "excel",
                 label: "Export as Excel",
-                icon: (
-                  <FileSpreadsheet size={16} className="text-emerald-500" />
-                ),
+                icon: <FileSpreadsheet size={16} className="text-emerald-500" />,
               },
               {
                 format: "csv",
@@ -563,85 +522,46 @@ const ExportDropdown = ({
   );
 };
 
-
 // ============================================
 // MAIN COMPONENT
 // ============================================
-// এটাই মূল page component
-// /admin/agents/[uuid]/ledger এ render হবে
 
 export default function AdminAgentLedgerPage() {
-
-  // ─── URL থেকে agent ID (UUID) বের করা ───
-  // URL: /admin/agents/f70ac53c-xxxx/ledger
-  // params.id = "f70ac53c-xxxx" (UUID)
   const params = useParams();
   const agentId = params.id as string;
-  // এই agentId দিয়ে API call হবে
-  // এটা internalId (UUID) - display ID না
-
   const router = useRouter();
 
-  // ─── STATE: সব data ও UI state ───
-  // প্রতিটা useState এর কাজ:
-
-  // Agent info - header এ দেখাতে
+  // ── State ──
   const [agent, setAgent] = useState<AgentInfo | null>(null);
-
-  // Ledger entries - table এর data
   const [data, setData] = useState<LedgerEntry[]>([]);
-
-  // Loading state - spinner দেখাতে
   const [loading, setLoading] = useState(true);
-
-  // Search - invoice, PNR, description search
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Type filter - TICKET, DEPOSIT, REFUNDED etc
   const [typeFilter, setTypeFilter] = useState("");
-
-  // Date range filter
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-
-  // Filter panel toggle
   const [showFilters, setShowFilters] = useState(false);
-
-  // Pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
-
-  // Sort
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-
-  // Modal - transaction detail
   const [selectedEntry, setSelectedEntry] = useState<LedgerEntry | null>(null);
-
-  // Multi-select (checkbox)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-  // Toast notifications
   const [toasts, setToasts] = useState<Toast[]>([]);
-
-  // Available transaction types for filter dropdown
   const [transactionTypes, setTransactionTypes] = useState<string[]>([]);
 
-  // Summary stats cards
-  const [stats, setStats] = useState({
-  currentBalance:   0,
-  totalCredit:      0,
-  totalDebit:       0,
-  transactionCount: 0,
-  creditLimit:      0,  // ✅ add
-  usedLimit:        0,  // ✅ add
-  availableCredit:  0,  // ✅ add
-  totalAvailable:   0,  // ✅ add
-});
+  const [stats, setStats] = useState<StatsState>({
+    currentBalance: 0,
+    totalCredit: 0,
+    totalDebit: 0,
+    transactionCount: 0,
+    creditLimit: 0,
+    usedLimit: 0,
+    availableCredit: 0,
+    totalAvailable: 0,
+  });
 
-  // Debounced search - 400ms পরে API call
-  // কেন? প্রতি keystroke এ API call করলে server overload হবে
+  // ── Debounced search ──
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -649,17 +569,14 @@ export default function AdminAgentLedgerPage() {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     searchTimeoutRef.current = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setPage(1); // search বদলালে page 1 এ ফিরে যাও
+      setPage(1);
     }, 400);
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
   }, [searchQuery]);
 
-
-  // ─── TOAST HELPER ───
-  // যেকোনো জায়গা থেকে addToast("message", "success") call করলে
-  // screen এ notification দেখাবে, 4 সেকেন্ড পরে মিলিয়ে যাবে
+  // ── Toast ──
   const addToast = useCallback(
     (message: string, type: Toast["type"] = "info") => {
       const id = Math.random().toString(36).substr(2, 9);
@@ -675,38 +592,26 @@ export default function AdminAgentLedgerPage() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-
-  // ─── API CALL: Ledger data fetch ───
-  // এটাই মূল data loading function
-  // page, search, filter বদলালে আবার call হয়
-
+  // ── Fetch data ──
   const fetchLedgerData = useCallback(async () => {
-    if (!agentId) return; // agentId না থাকলে call করো না
-
+    if (!agentId) return;
     setLoading(true);
     try {
-      // URL params build করা
       const queryParams = new URLSearchParams({
         page: page.toString(),
         limit: pageSize.toString(),
         sortOrder,
-        // conditionally params add করা
-        // search না থাকলে পাঠানোর দরকার নেই
         ...(debouncedSearch && { search: debouncedSearch }),
         ...(typeFilter && { type: typeFilter }),
         ...(dateFrom && { dateFrom }),
         ...(dateTo && { dateTo }),
       });
 
-      // ✅ Admin API endpoint - agentId (UUID) দিয়ে call
-      // /api/admin/agents/f70ac53c-xxxx/ledger?page=1&limit=10
       const response = await fetch(
         `/api/admin/agents/${agentId}/ledger?${queryParams}`,
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const result: ApiResponse = await response.json();
 
@@ -716,58 +621,76 @@ export default function AdminAgentLedgerPage() {
         setTotalPages(result.totalPages || 0);
         setTransactionTypes(result.types || []);
 
-        // Agent info set করো (header এ দেখাতে)
         if (result.agent) {
           setAgent(result.agent);
         }
 
-        // Stats set করো (summary cards)
-        if (result.stats) {
-          setStats(result.stats);
-        }
+     if (result.stats) {
+  setStats((prev) => ({
+    currentBalance:
+      Number(result.stats.currentBalance ?? prev.currentBalance),
+    totalCredit:
+      Number(result.stats.totalCredit ?? prev.totalCredit),
+    totalDebit:
+      Number(result.stats.totalDebit ?? prev.totalDebit),
+    transactionCount:
+      Number(result.stats.transactionCount ?? prev.transactionCount),
+    creditLimit: Number(
+      result.stats.creditLimit ??
+      result.agent?.creditLimit ??
+      prev.creditLimit
+    ),
+    usedLimit: Number(
+      result.stats.usedLimit ??
+      result.agent?.usedLimit ??
+      prev.usedLimit
+    ),
+    availableCredit: Number(
+      result.stats.availableCredit ??
+      result.agent?.availableCredit ??
+      prev.availableCredit
+    ),
+    totalAvailable: Number(
+      result.stats.totalAvailable != null
+        ? result.stats.totalAvailable
+        : result.agent?.availableCredit != null
+          ? (result.stats.currentBalance ?? 0) + (result.agent.availableCredit ?? 0)
+          : prev.totalAvailable
+    ),
+  }));
+}
       } else {
         addToast("Failed to load ledger data", "error");
       }
     } catch (error: any) {
       console.error("Fetch error:", error);
-      addToast(
-        error.message || "Error loading ledger data",
-        "error",
-      );
+      addToast(error.message || "Error loading ledger data", "error");
       setData([]);
     } finally {
       setLoading(false);
     }
   }, [
-    agentId,        // কোন agent
-    page,           // কোন page
-    pageSize,       // page এ কতটা row
-    debouncedSearch,// search text
-    typeFilter,     // type filter
-    dateFrom,       // date from
-    dateTo,         // date to
-    sortOrder,      // ascending/descending
+    agentId,
+    page,
+    pageSize,
+    debouncedSearch,
+    typeFilter,
+    dateFrom,
+    dateTo,
+    sortOrder,
     addToast,
   ]);
 
-  // ✅ dependency array তে যা আছে, তার যেকোনো একটা বদলালে
-  // fetchLedgerData আবার call হবে → নতুন data আসবে
-
-  // Component mount এবং filter change এ data fetch
   useEffect(() => {
     fetchLedgerData();
   }, [fetchLedgerData]);
 
-
-  // ─── EVENT HANDLERS ───
-
-  // Sort toggle - asc ↔ desc
+  // ── Handlers ──
   const handleSort = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     setPage(1);
   };
 
-  // সব filter reset
   const handleReset = () => {
     setSearchQuery("");
     setTypeFilter("");
@@ -779,7 +702,6 @@ export default function AdminAgentLedgerPage() {
     addToast("Filters cleared", "info");
   };
 
-  // Export handler
   const handleExport = async (format: string) => {
     addToast(`Exporting as ${format.toUpperCase()}...`, "info");
     try {
@@ -798,7 +720,9 @@ export default function AdminAgentLedgerPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `ledger-${agent?.agentId || agentId}-${Date.now()}.${format === "excel" ? "xlsx" : format}`;
+        a.download = `ledger-${agent?.agentId || agentId}-${Date.now()}.${
+          format === "excel" ? "xlsx" : format
+        }`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -812,13 +736,11 @@ export default function AdminAgentLedgerPage() {
     }
   };
 
-  // Refresh button
   const handleRefresh = () => {
     addToast("Refreshing...", "info");
     fetchLedgerData();
   };
 
-  // Select all checkbox
   const toggleSelectAll = () => {
     if (selectedIds.size === data.length) {
       setSelectedIds(new Set());
@@ -827,7 +749,6 @@ export default function AdminAgentLedgerPage() {
     }
   };
 
-  // Individual checkbox
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
     if (newSelected.has(id)) newSelected.delete(id);
@@ -835,43 +756,32 @@ export default function AdminAgentLedgerPage() {
     setSelectedIds(newSelected);
   };
 
-  // Active filter count - badge number
-  const activeFilterCount = [typeFilter, dateFrom, dateTo].filter(
-    Boolean,
-  ).length;
+  const activeFilterCount = [typeFilter, dateFrom, dateTo].filter(Boolean).length;
 
-  // Page totals - footer row এ দেখায়
-  // useMemo: data বদলালে recalculate, নাহলে cached value
   const pageTotals = useMemo(() => {
-    const totalDebit = data.reduce(
-      (sum, item) => sum + (item.debit || 0),
-      0,
-    );
-    const totalCredit = data.reduce(
-      (sum, item) => sum + (item.credit || 0),
-      0,
-    );
+    const totalDebit = data.reduce((sum, item) => sum + (item.debit || 0), 0);
+    const totalCredit = data.reduce((sum, item) => sum + (item.credit || 0), 0);
     return { totalDebit, totalCredit };
   }, [data]);
 
+  // ── Suppress unused router warning ──
+  void router;
 
   // ============================================
-  // RENDER - UI
+  // RENDER
   // ============================================
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 p-4 md:p-6">
       <div className="max-w-[1800px] mx-auto space-y-6">
 
-        {/* ─── HEADER ─── */}
-        {/* Back button, Agent name, Agent ID, Action buttons */}
+        {/* ── HEADER ── */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
         >
           <div>
-            {/* Back button → Agent list page এ ফিরে যাওয়া */}
             <Link
               href="/admin/agent/all-agent"
               className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition mb-2"
@@ -887,323 +797,318 @@ export default function AdminAgentLedgerPage() {
               Agent Ledger
             </h1>
 
-            {/* Agent info - name ও display ID */}
             {agent && (
-  <div className="flex items-center gap-3 mt-2">
-    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0">
-      {agent.name.charAt(0)}
-    </div>
-    <div>
-      <div className="flex items-center gap-2">
-        <p className="text-sm font-semibold text-slate-800">
-          {agent.name}
-        </p>
-        {/* Status badge */}
-        {agent.status && (
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            agent.status === "ACTIVE"
-              ? "bg-emerald-50 text-emerald-700"
-              : agent.status === "PENDING"
-                ? "bg-amber-50 text-amber-700"
-                : "bg-rose-50 text-rose-700"
-          }`}>
-            {agent.status}
-          </span>
-        )}
-        {/* Tier badge */}
-        {agent.tier && (
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            agent.tier === "PLATINUM"
-              ? "bg-purple-50 text-purple-700"
-              : agent.tier === "GOLD"
-                ? "bg-yellow-50 text-yellow-700"
-                : agent.tier === "SILVER"
-                  ? "bg-slate-100 text-slate-700"
-                  : "bg-amber-50 text-amber-700"
-          }`}>
-            {agent.tier}
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-slate-500">
-        {agent.agentId || agent.id} • {agent.email}
-        {agent.phone && ` • ${agent.phone}`}
-      </p>
-    </div>
-  </div>
-)}
+              <div className="flex items-center gap-3 mt-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  {agent.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-slate-800">
+                      {agent.name}
+                    </p>
+                    {agent.status && (
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          agent.status === "ACTIVE"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : agent.status === "PENDING"
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-rose-50 text-rose-700"
+                        }`}
+                      >
+                        {agent.status}
+                      </span>
+                    )}
+                    {agent.tier && (
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          agent.tier === "PLATINUM"
+                            ? "bg-purple-50 text-purple-700"
+                            : agent.tier === "GOLD"
+                              ? "bg-yellow-50 text-yellow-700"
+                              : agent.tier === "SILVER"
+                                ? "bg-slate-100 text-slate-700"
+                                : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {agent.tier}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {agent.agentId || agent.id} • {agent.email}
+                    {agent.phone && ` • ${agent.phone}`}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Action buttons */}
+          {/* ── Toolbar ── */}
           <div className="w-full lg:w-auto lg:min-w-[820px] space-y-3">
-  {/* Top toolbar */}
-  <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 md:gap-3">
-    {/* Search */}
-    <div className="relative flex-1 min-w-[220px]">
-      <Search
-        size={18}
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-      />
-      <input
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search invoice, booking, PNR..."
-        className="w-full pl-11 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition"
-      />
-      {searchQuery && (
-        <button
-          onClick={() => setSearchQuery("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full"
-        >
-          <X size={14} className="text-slate-400" />
-        </button>
-      )}
-    </div>
+            <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 md:gap-3">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[220px]">
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search invoice, booking, PNR..."
+                  className="w-full pl-11 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full"
+                  >
+                    <X size={14} className="text-slate-400" />
+                  </button>
+                )}
+              </div>
 
-    {/* Type Filter */}
-    <div className="relative shrink-0">
-      <select
-        value={typeFilter}
-        onChange={(e) => {
-          setTypeFilter(e.target.value);
-          setPage(1);
-        }}
-        className="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer min-w-[150px]"
-      >
-        <option value="">All Types</option>
-        {transactionTypes.map((type) => (
-          <option key={type} value={type}>
-            {type}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        size={16}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-      />
-    </div>
+              {/* Type Filter */}
+              <div className="relative shrink-0">
+                <select
+                  value={typeFilter}
+                  onChange={(e) => {
+                    setTypeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 cursor-pointer min-w-[150px]"
+                >
+                  <option value="">All Types</option>
+                  {transactionTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                />
+              </div>
 
-    {/* Filter Toggle */}
-    <button
-      onClick={() => setShowFilters(!showFilters)}
-      className={`px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition relative shrink-0 ${
-        showFilters
-          ? "bg-blue-600 text-white"
-          : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-      }`}
-    >
-      <SlidersHorizontal size={16} />
-      <span className="hidden sm:inline">Filters</span>
-      {activeFilterCount > 0 && (
-        <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-          {activeFilterCount}
-        </span>
-      )}
-    </button>
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition relative shrink-0 ${
+                  showFilters
+                    ? "bg-blue-600 text-white"
+                    : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <SlidersHorizontal size={16} />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
 
-    {/* Reset */}
-    <button
-      onClick={handleReset}
-      className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition flex items-center gap-2 shrink-0"
-    >
-      <RotateCcw size={16} />
-      <span className="hidden sm:inline">Reset</span>
-    </button>
+              {/* Reset */}
+              <button
+                onClick={handleReset}
+                className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition flex items-center gap-2 shrink-0"
+              >
+                <RotateCcw size={16} />
+                <span className="hidden sm:inline">Reset</span>
+              </button>
 
-    {/* Export */}
-    <ExportDropdown onExport={handleExport} />
+              {/* Export */}
+              <ExportDropdown onExport={handleExport} />
 
-    {/* Refresh */}
-    <button
-      onClick={handleRefresh}
-      disabled={loading}
-      className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700 transition shadow-sm disabled:opacity-70 shrink-0"
-    >
-      <RefreshCw
-        size={16}
-        className={loading ? "animate-spin" : ""}
-      />
-      <span className="hidden sm:inline">Refresh</span>
-    </button>
-  </div>
+              {/* Refresh */}
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700 transition shadow-sm disabled:opacity-70 shrink-0"
+              >
+                <RefreshCw
+                  size={16}
+                  className={loading ? "animate-spin" : ""}
+                />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
+            </div>
 
-  {/* Extended Filters */}
-  <AnimatePresence>
-    {showFilters && (
-      <motion.div
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: "auto" }}
-        exit={{ opacity: 0, height: 0 }}
-        className="overflow-hidden"
-      >
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">
-              Date From
-            </label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => {
-                setDateFrom(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-            />
+            {/* Extended Filters */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1.5">
+                        Date From
+                      </label>
+                      <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => {
+                          setDateFrom(e.target.value);
+                          setPage(1);
+                        }}
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1.5">
+                        Date To
+                      </label>
+                      <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => {
+                          setDateTo(e.target.value);
+                          setPage(1);
+                        }}
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        onClick={handleReset}
+                        className="px-4 py-2.5 text-sm text-slate-600 hover:text-slate-800 transition"
+                      >
+                        Clear all filters
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">
-              Date To
-            </label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-            />
-          </div>
-
-          <div className="flex items-end">
-            <button
-              onClick={handleReset}
-              className="px-4 py-2.5 text-sm text-slate-600 hover:text-slate-800 transition"
-            >
-              Clear all filters
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-</div>
         </motion.div>
 
-        {/* ─── STATS CARDS ─── */}
-        {/* 4টা card: Balance, Total Credit, Total Debit, Transaction Count */}
-       <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.1 }}
-  className="overflow-x-auto pb-1"
->
-  <div className="flex gap-3 min-w-max">
-    {/* Current Balance */}
-    <div className="min-w-[190px] bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4 shadow-sm border border-slate-700">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide">
-            Current Balance
-          </p>
-          <p className="text-lg font-bold text-white mt-1">
-            {formatCurrency(stats.currentBalance)}
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-          <Wallet size={18} className="text-emerald-400" />
-        </div>
-      </div>
-    </div>
+        {/* ── STATS CARDS ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="overflow-x-auto pb-1"
+        >
+          <div className="flex gap-3 min-w-max">
+            {/* Current Balance */}
+            <div className="min-w-[190px] bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4 shadow-sm border border-slate-700">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wide">
+                    Current Balance
+                  </p>
+                  <p className="text-lg font-bold text-white mt-1">
+                    {formatCurrency(stats.currentBalance)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                  <Wallet size={18} className="text-emerald-400" />
+                </div>
+              </div>
+            </div>
 
-    {/* Total Credit */}
-    <div className="min-w-[180px] bg-white rounded-2xl p-4 shadow-sm border border-emerald-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            Total Credit
-          </p>
-          <p className="text-lg font-bold text-emerald-600 mt-1">
-            {formatCurrency(stats.totalCredit)}
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-          <ArrowDownLeft size={18} className="text-emerald-600" />
-        </div>
-      </div>
-    </div>
+            {/* Total Credit */}
+            <div className="min-w-[180px] bg-white rounded-2xl p-4 shadow-sm border border-emerald-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+                    Total Credit
+                  </p>
+                  <p className="text-lg font-bold text-emerald-600 mt-1">
+                    {formatCurrency(stats.totalCredit)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                  <ArrowDownLeft size={18} className="text-emerald-600" />
+                </div>
+              </div>
+            </div>
 
-    {/* Total Debit */}
-    <div className="min-w-[180px] bg-white rounded-2xl p-4 shadow-sm border border-rose-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            Total Debit
-          </p>
-          <p className="text-lg font-bold text-rose-600 mt-1">
-            {formatCurrency(stats.totalDebit)}
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-          <ArrowUpRight size={18} className="text-rose-600" />
-        </div>
-      </div>
-    </div>
+            {/* Total Debit */}
+            <div className="min-w-[180px] bg-white rounded-2xl p-4 shadow-sm border border-rose-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+                    Total Debit
+                  </p>
+                  <p className="text-lg font-bold text-rose-600 mt-1">
+                    {formatCurrency(stats.totalDebit)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+                  <ArrowUpRight size={18} className="text-rose-600" />
+                </div>
+              </div>
+            </div>
 
-    {/* Transactions */}
-    <div className="min-w-[160px] bg-white rounded-2xl p-4 shadow-sm border border-blue-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            Transactions
-          </p>
-          <p className="text-lg font-bold text-blue-600 mt-1">
-            {stats.transactionCount}
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-          <Receipt size={18} className="text-blue-600" />
-        </div>
-      </div>
-    </div>
+            {/* Transactions */}
+            <div className="min-w-[160px] bg-white rounded-2xl p-4 shadow-sm border border-blue-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+                    Transactions
+                  </p>
+                  <p className="text-lg font-bold text-blue-600 mt-1">
+                    {stats.transactionCount}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                  <Receipt size={18} className="text-blue-600" />
+                </div>
+              </div>
+            </div>
 
-    {/* Credit Limit */}
-    <div className="min-w-[190px] bg-white rounded-2xl p-4 shadow-sm border border-purple-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            Credit Limit
-          </p>
-          <p className="text-lg font-bold text-purple-600 mt-1">
-            {formatCurrency(stats.creditLimit)}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Used: {formatCurrency(stats.usedLimit)}
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
-          <Wallet size={18} className="text-purple-600" />
-        </div>
-      </div>
-    </div>
+            {/* Credit Limit */}
+            <div className="min-w-[190px] bg-white rounded-2xl p-4 shadow-sm border border-purple-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+                    Credit Limit
+                  </p>
+                  <p className="text-lg font-bold text-purple-600 mt-1">
+                    {formatCurrency(stats.creditLimit)}
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Used: {formatCurrency(stats.usedLimit)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                  <Wallet size={18} className="text-purple-600" />
+                </div>
+              </div>
+            </div>
 
-    {/* Total Available */}
-    <div className="min-w-[190px] bg-white rounded-2xl p-4 shadow-sm border border-teal-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-            Total Available
-          </p>
-          <p className="text-lg font-bold text-teal-600 mt-1">
-            {formatCurrency(stats.totalAvailable)}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Balance + Credit
-          </p>
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
-          <CheckCircle2 size={18} className="text-teal-600" />
-        </div>
-      </div>
-    </div>
-  </div>
-</motion.div>
+            {/* Total Available */}
+            <div className="min-w-[190px] bg-white rounded-2xl p-4 shadow-sm border border-teal-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+                    Total Available
+                  </p>
+                  <p className="text-lg font-bold text-teal-600 mt-1">
+                    {formatCurrency(stats.totalAvailable)}
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Balance + Credit
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={18} className="text-teal-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
-        
-        {/* ─── BULK ACTIONS BAR ─── */}
-        {/* Checkbox select করলে দেখায় */}
+        {/* ── BULK ACTIONS ── */}
         <AnimatePresence>
           {selectedIds.size > 0 && (
             <motion.div
@@ -1240,17 +1145,13 @@ export default function AdminAgentLedgerPage() {
           )}
         </AnimatePresence>
 
-        {/* ─── RESULTS INFO ─── */}
+        {/* ── RESULTS INFO ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p className="text-sm text-slate-500">
             Showing{" "}
-            <span className="font-semibold text-slate-700">
-              {data.length}
-            </span>{" "}
+            <span className="font-semibold text-slate-700">{data.length}</span>{" "}
             of{" "}
-            <span className="font-semibold text-slate-700">
-              {totalRecords}
-            </span>{" "}
+            <span className="font-semibold text-slate-700">{totalRecords}</span>{" "}
             transactions
           </p>
           <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -1278,8 +1179,7 @@ export default function AdminAgentLedgerPage() {
           </div>
         </div>
 
-        {/* ─── TABLE ─── */}
-        {/* মূল ledger table */}
+        {/* ── TABLE ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1287,35 +1187,23 @@ export default function AdminAgentLedgerPage() {
           className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden"
         >
           {loading ? (
-            // Loading state - spinner
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2
-                size={40}
-                className="text-blue-500 animate-spin mb-4"
-              />
-              <p className="text-slate-500 font-medium">
-                Loading transactions...
-              </p>
+              <Loader2 size={40} className="text-blue-500 animate-spin mb-4" />
+              <p className="text-slate-500 font-medium">Loading transactions...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                {/* Table Header */}
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-100">
-                    {/* Checkbox column */}
                     <th className="px-4 py-4 text-left">
                       <input
                         type="checkbox"
-                        checked={
-                          data.length > 0 &&
-                          selectedIds.size === data.length
-                        }
+                        checked={data.length > 0 && selectedIds.size === data.length}
                         onChange={toggleSelectAll}
                         className="w-4 h-4 rounded border-slate-300 text-blue-600"
                       />
                     </th>
-                    {/* Date - sortable */}
                     <th className="px-4 py-4 text-left">
                       <button
                         onClick={handleSort}
@@ -1329,14 +1217,7 @@ export default function AdminAgentLedgerPage() {
                         )}
                       </button>
                     </th>
-                    {/* Static headers */}
-                    {[
-                      "Invoice",
-                      "Booking",
-                      "PNR",
-                      "Description",
-                      "Type",
-                    ].map((h) => (
+                    {["Invoice", "Booking", "PNR", "Description", "Type"].map((h) => (
                       <th
                         key={h}
                         className="px-4 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
@@ -1344,7 +1225,6 @@ export default function AdminAgentLedgerPage() {
                         {h}
                       </th>
                     ))}
-                    {/* Right-aligned amount headers */}
                     {["Debit", "Credit", "Balance"].map((h) => (
                       <th
                         key={h}
@@ -1359,7 +1239,6 @@ export default function AdminAgentLedgerPage() {
                   </tr>
                 </thead>
 
-                {/* Table Body */}
                 <tbody className="divide-y divide-slate-100">
                   {data.length > 0 ? (
                     data.map((item) => {
@@ -1375,7 +1254,6 @@ export default function AdminAgentLedgerPage() {
                             isSelected ? "bg-blue-50/50" : ""
                           }`}
                         >
-                          {/* Checkbox */}
                           <td className="px-4 py-4">
                             <input
                               type="checkbox"
@@ -1385,14 +1263,10 @@ export default function AdminAgentLedgerPage() {
                             />
                           </td>
 
-                          {/* Date */}
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2">
                               <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                                <Calendar
-                                  size={14}
-                                  className="text-slate-500"
-                                />
+                                <Calendar size={14} className="text-slate-500" />
                               </div>
                               <div>
                                 <p className="text-sm font-medium text-slate-800">
@@ -1405,7 +1279,6 @@ export default function AdminAgentLedgerPage() {
                             </div>
                           </td>
 
-                          {/* Invoice - clickable */}
                           <td className="px-4 py-4">
                             <button
                               onClick={() => setSelectedEntry(item)}
@@ -1416,7 +1289,6 @@ export default function AdminAgentLedgerPage() {
                             </button>
                           </td>
 
-                          {/* Booking */}
                           <td className="px-4 py-4">
                             {item.booking ? (
                               <span className="text-sm font-medium text-blue-600">
@@ -1427,7 +1299,6 @@ export default function AdminAgentLedgerPage() {
                             )}
                           </td>
 
-                          {/* PNR */}
                           <td className="px-4 py-4">
                             {item.apnr ? (
                               <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
@@ -1438,7 +1309,6 @@ export default function AdminAgentLedgerPage() {
                             )}
                           </td>
 
-                          {/* Description */}
                           <td className="px-4 py-4">
                             <p
                               className="text-sm text-slate-700 max-w-[200px] truncate"
@@ -1448,7 +1318,6 @@ export default function AdminAgentLedgerPage() {
                             </p>
                           </td>
 
-                          {/* Type Badge */}
                           <td className="px-4 py-4">
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold ${typeConfig.bg} ${typeConfig.text}`}
@@ -1458,7 +1327,6 @@ export default function AdminAgentLedgerPage() {
                             </span>
                           </td>
 
-                          {/* Debit - red */}
                           <td className="px-4 py-4 text-right">
                             {item.debit > 0 ? (
                               <span className="text-sm font-semibold text-rose-600 flex items-center justify-end gap-1">
@@ -1470,7 +1338,6 @@ export default function AdminAgentLedgerPage() {
                             )}
                           </td>
 
-                          {/* Credit - green */}
                           <td className="px-4 py-4 text-right">
                             {item.credit > 0 ? (
                               <span className="text-sm font-semibold text-emerald-600 flex items-center justify-end gap-1">
@@ -1482,14 +1349,12 @@ export default function AdminAgentLedgerPage() {
                             )}
                           </td>
 
-                          {/* Balance */}
                           <td className="px-4 py-4 text-right">
                             <span className="text-sm font-bold text-slate-800">
                               {formatCurrency(item.balance)}
                             </span>
                           </td>
 
-                          {/* Actions */}
                           <td className="px-4 py-4">
                             <div className="flex items-center justify-center gap-1">
                               <button
@@ -1497,10 +1362,7 @@ export default function AdminAgentLedgerPage() {
                                 className="p-2 hover:bg-slate-100 rounded-lg transition"
                                 title="View details"
                               >
-                                <Eye
-                                  size={16}
-                                  className="text-slate-500"
-                                />
+                                <Eye size={16} className="text-slate-500" />
                               </button>
                             </div>
                           </td>
@@ -1508,22 +1370,15 @@ export default function AdminAgentLedgerPage() {
                       );
                     })
                   ) : (
-                    // Empty state
                     <tr>
-                      <td
-                        colSpan={11}
-                        className="px-4 py-16 text-center"
-                      >
+                      <td colSpan={11} className="px-4 py-16 text-center">
                         <motion.div
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           className="flex flex-col items-center"
                         >
                           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                            <Receipt
-                              size={36}
-                              className="text-slate-400"
-                            />
+                            <Receipt size={36} className="text-slate-400" />
                           </div>
                           <p className="text-slate-600 font-semibold text-lg">
                             No transactions found
@@ -1544,7 +1399,6 @@ export default function AdminAgentLedgerPage() {
                   )}
                 </tbody>
 
-                {/* Table Footer - Page Totals */}
                 {data.length > 0 && (
                   <tfoot>
                     <tr className="bg-slate-50 border-t-2 border-slate-200">
@@ -1572,7 +1426,7 @@ export default function AdminAgentLedgerPage() {
           )}
         </motion.div>
 
-        {/* ─── PAGINATION ─── */}
+        {/* ── PAGINATION ── */}
         {!loading && totalRecords > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1582,15 +1436,13 @@ export default function AdminAgentLedgerPage() {
           >
             <p className="text-sm text-slate-500 order-2 sm:order-1">
               Page{" "}
-              <span className="font-semibold text-slate-700">{page}</span>{" "}
-              of{" "}
+              <span className="font-semibold text-slate-700">{page}</span> of{" "}
               <span className="font-semibold text-slate-700">
                 {totalPages || 1}
               </span>
             </p>
 
             <div className="flex items-center gap-1 order-1 sm:order-2">
-              {/* First page */}
               <button
                 disabled={page === 1}
                 onClick={() => setPage(1)}
@@ -1598,7 +1450,6 @@ export default function AdminAgentLedgerPage() {
               >
                 <ChevronsLeft size={18} className="text-slate-600" />
               </button>
-              {/* Previous */}
               <button
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
@@ -1607,12 +1458,11 @@ export default function AdminAgentLedgerPage() {
                 <ChevronLeft size={18} className="text-slate-600" />
               </button>
 
-              {/* Page numbers */}
               <div className="flex items-center gap-1 mx-1 md:mx-2">
                 {Array.from(
                   { length: Math.min(5, totalPages || 1) },
                   (_, i) => {
-                    let pageNum;
+                    let pageNum: number;
                     const t = totalPages || 1;
                     if (t <= 5) pageNum = i + 1;
                     else if (page <= 3) pageNum = i + 1;
@@ -1636,7 +1486,6 @@ export default function AdminAgentLedgerPage() {
                 )}
               </div>
 
-              {/* Next */}
               <button
                 disabled={page === totalPages || totalPages === 0}
                 onClick={() => setPage(page + 1)}
@@ -1644,7 +1493,6 @@ export default function AdminAgentLedgerPage() {
               >
                 <ChevronRight size={18} className="text-slate-600" />
               </button>
-              {/* Last page */}
               <button
                 disabled={page === totalPages || totalPages === 0}
                 onClick={() => setPage(totalPages)}
@@ -1657,7 +1505,7 @@ export default function AdminAgentLedgerPage() {
         )}
       </div>
 
-      {/* ─── MODALS ─── */}
+      {/* ── MODALS ── */}
       <AnimatePresence>
         {selectedEntry && (
           <TransactionDetailModal
@@ -1667,7 +1515,7 @@ export default function AdminAgentLedgerPage() {
         )}
       </AnimatePresence>
 
-      {/* ─── TOASTS ─── */}
+      {/* ── TOASTS ── */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );

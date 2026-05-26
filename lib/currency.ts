@@ -442,6 +442,14 @@ export function convertFareToDisplay(
 // ==========================================
 // Subdomain Configuration (For Admin Currency Page)
 // ==========================================
+export interface SubdomainConfig {
+  subdomain: string;
+  countryName: string;
+  countryCode: string;
+  flag: string;
+  currencyCode: string;
+  currencyName: string;
+}
 
 export const SUBDOMAIN_CONFIG = [
   {
