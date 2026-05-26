@@ -1,0 +1,78 @@
+{
+  "topbar": {
+    "iata": "IATA Certified",
+    "login": "Login",
+    "join": "Join Free"
+  },
+  "nav": {
+    "flights": "Flights",
+    "hotels": "Hotels",
+    "umrah": "Umrah",
+    "visa": "Visa",
+    "holidays": "Holidays"
+  },
+  "hero": {
+    "checkOffers": "Check Offers",
+    "popularRoutes": "Popular Routes"
+  },
+  "deals": {
+    "title": "Deals of the Week",
+    "subtitle": "Limited time offers — Book before they expire!",
+    "viewAll": "View All Deals",
+    "bookBtn": "Book This Deal",
+    "seatsLeft": "seats left!",
+    "perPerson": "per person • Economy",
+    "off": "OFF"
+  },
+  "destinations": {
+    "badge": "Top Choices",
+    "title": "Popular Routes from Dhaka",
+    "subtitle": "Most booked destinations this month",
+    "from": "from",
+    "direct": "Direct"
+  },
+  "whyUs": {
+    "badge": "Award Winning Agency",
+    "title": "Why Professionals Choose Miji",
+    "desc": "We have built a reputation on trust, transparency, and exceptional service since 2015.",
+    "awardTitle": "Award Winning",
+    "bestAgency": "Best Travel Agency in",
+    "rated": "Rated 4.9/5 from 50,000+ reviews",
+    "features": [
+      { "title": "Best Price Guarantee", "desc": "Find a lower price? We will match it within 24 hours." },
+      { "title": "Instant Confirmation", "desc": "Get your tickets instantly after booking — no waiting." },
+      { "title": "Secure Payments", "desc": "256-bit SSL encryption protects every transaction." },
+      { "title": "24/7 Expert Support", "desc": "Real humans ready to help anytime, anywhere." },
+      { "title": "Free Changes & Cancellations", "desc": "Flexible policies on most bookings." },
+      { "title": "IATA Accredited", "desc": "Official certified travel agency worldwide." }
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Don't just take our word for it — hear from satisfied travelers across"
+  },
+  "faq": {
+    "badge": "Common Questions",
+    "title": "Frequently Asked Questions",
+    "items": [
+      { "q": "How do I book a flight?", "a": "Simply enter your destination, select dates, and choose your preferred flight. Complete payment to receive instant confirmation." },
+      { "q": "Can I cancel or change my booking?", "a": "Yes! Most bookings come with free changes and cancellations. Check your specific fare rules for details." },
+      { "q": "What payment methods are accepted?", "a": "We accept all major credit cards, debit cards, bank transfers, and online payment gateways like bKash, Nagad, and Rocket." },
+      { "q": "Is my personal information secure?", "a": "Absolutely! We use 256-bit SSL encryption to protect all your data." },
+      { "q": "How do I get my e-ticket?", "a": "Your e-ticket is sent to your email instantly after booking. You can also download it from Manage Booking." }
+    ]
+  },
+  "footer": {
+    "desc": "Premium travel platform with unmatched fares and service excellence. Serving",
+    "services": "Services",
+    "company": "Company",
+    "contact": "Contact Us",
+    "serviceLinks": ["International Flights", "Domestic Flights", "Hotel Booking", "Umrah Packages", "Car Rental"],
+    "companyLinks": ["About Us", "Careers", "Blog", "Press", "Partners"],
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "rights": "Miji Travels. All Rights Reserved.",
+    "certified": "IATA • ISO 9001 • TATTSBD Certified"
+  }
+}
