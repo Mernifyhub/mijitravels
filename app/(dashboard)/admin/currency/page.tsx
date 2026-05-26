@@ -9,7 +9,7 @@ import {
   DollarSign, RefreshCw, Globe, TrendingUp,
   Calculator, Banknote, Info, 
   ChevronRight, Clock, X,
-  Layers, Settings,
+  Layers,
 } from "lucide-react";
 import { SUBDOMAIN_CONFIG } from "@/lib/currency";
 

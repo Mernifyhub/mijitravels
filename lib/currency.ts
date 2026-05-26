@@ -437,4 +437,75 @@ export function convertFareToDisplay(
     perPerson: round2(perPerson),
     raw: convertedFare,
   };
+  
 }
+// ==========================================
+// Subdomain Configuration (For Admin Currency Page)
+// ==========================================
+
+export const SUBDOMAIN_CONFIG = [
+  {
+    subdomain: "bd",
+    countryName: "Bangladesh",
+    countryCode: "BD",
+    flag: "🇧🇩",
+    currencyCode: "BDT",
+    currencyName: "Bangladeshi Taka",
+  },
+  {
+    subdomain: "pk",
+    countryName: "Pakistan",
+    countryCode: "PK",
+    flag: "🇵🇰",
+    currencyCode: "PKR",
+    currencyName: "Pakistani Rupee",
+  },
+  {
+    subdomain: "in",
+    countryName: "India",
+    countryCode: "IN",
+    flag: "🇮🇳",
+    currencyCode: "INR",
+    currencyName: "Indian Rupee",
+  },
+  {
+    subdomain: "my",
+    countryName: "Malaysia",
+    countryCode: "MY",
+    flag: "🇲🇾",
+    currencyCode: "MYR",
+    currencyName: "Malaysian Ringgit",
+  },
+  {
+    subdomain: "ae",
+    countryName: "UAE",
+    countryCode: "AE",
+    flag: "🇦🇪",
+    currencyCode: "AED",
+    currencyName: "UAE Dirham",
+  },
+  {
+    subdomain: "gb",
+    countryName: "United Kingdom",
+    countryCode: "GB",
+    flag: "🇬🇧",
+    currencyCode: "GBP",
+    currencyName: "British Pound",
+  },
+  {
+    subdomain: "eu",
+    countryName: "Euro Zone",
+    countryCode: "EU",
+    flag: "🇪🇺",
+    currencyCode: "EUR",
+    currencyName: "Euro",
+  },
+  {
+    subdomain: "us",
+    countryName: "United States",
+    countryCode: "US",
+    flag: "🇺🇸",
+    currencyCode: "USD",
+    currencyName: "US Dollar",
+  },
+] as const;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo} from "react";
+import React from "react";
 import {
   Search,
   Filter,
@@ -417,44 +418,63 @@ export default function AccountManagementPage() {
   };
 
   // Filtered Data
-  const filteredData = useMemo(() => {
-    let result = [...data];
+ // Filtered Data
+const filteredData = useMemo(() => {
+  let result = [...data];
 
-    // Tab filter
-    if (activeTab !== "all") {
-      result = result.filter((item) => item.status === activeTab);
-    }
+  // Filter by status
+  if (activeTab !== "all") {
+    result = result.filter((item) => item.status === activeTab);
+  }
 
-    // Method filter
-    if (filterMethod !== "all") {
-      result = result.filter((item) => item.method === filterMethod);
-    }
+  // Filter by payment method
+  if (filterMethod !== "all") {
+    result = result.filter((item) => item.method === filterMethod);
+  }
 
-    // Search
-    if (debouncedSearch) {
-      const search = debouncedSearch.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.agentName.toLowerCase().includes(search) ||
-          item.agentId.toLowerCase().includes(search) ||
-          item.transactionId.toLowerCase().includes(search) ||
-          item.requestId.toLowerCase().includes(search)
-      );
-    }
+  // Search
+  if (debouncedSearch.trim()) {
+    const search = debouncedSearch.toLowerCase();
 
-    // Sort
-    if (sortConfig.key) {
-      result.sort((a, b) => {
-        const aVal = a[sortConfig.key!];
-        const bVal = b[sortConfig.key!];
-        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
+    result = result.filter((item) =>
+      item.requestId.toLowerCase().includes(search) ||
+      item.agentName.toLowerCase().includes(search) ||
+      item.agentId.toLowerCase().includes(search) ||
+      item.agentPhone.toLowerCase().includes(search) ||
+      item.agentEmail.toLowerCase().includes(search) ||
+      item.transactionId.toLowerCase().includes(search) ||
+      item.accountNumber.toLowerCase().includes(search)
+    );
+  }
 
-    return result;
-  }, [data, activeTab, filterMethod, debouncedSearch, sortConfig]);
+  // Sorting
+  if (sortConfig.key) {
+    result.sort((a, b) => {
+      const key = sortConfig.key!;
+
+      const aVal = a[key];
+      const bVal = b[key];
+
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return sortConfig.direction === "asc" ? 1 : -1;
+      if (bVal == null) return sortConfig.direction === "asc" ? -1 : 1;
+
+      // Number sorting
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortConfig.direction === "asc"
+          ? aVal - bVal
+          : bVal - aVal;
+      }
+
+      // String sorting
+      return sortConfig.direction === "asc"
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
+    });
+  }
+
+  return result;
+}, [data, activeTab, filterMethod, debouncedSearch, sortConfig]);
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -481,16 +501,18 @@ export default function AccountManagementPage() {
     return count;
   }, [filterMethod]);
 
-  // Method Icon
-  const MethodIcon = ({ method }: { method: string }) => {
-    const icons: Record<string, JSX.Element> = {
-      bkash: <Smartphone className="text-pink-600" size={18} />,
-      nagad: <Smartphone className="text-orange-600" size={18} />,
-      rocket: <Smartphone className="text-purple-600" size={18} />,
-      bank: <Building2 className="text-blue-600" size={18} />,
-    };
-    return icons[method] || <CreditCard size={18} />;
+// Method Icon
+const MethodIcon = ({ method }: { method: string }) => {
+  const icons: Record<string, React.ReactElement> = {
+    bkash: <Smartphone className="text-pink-600" size={18} />,
+    nagad: <Smartphone className="text-orange-600" size={18} />,
+    rocket: <Smartphone className="text-purple-600" size={18} />,
+    upay: <Smartphone className="text-blue-600" size={18} />,
+    bank: <Building2 className="text-indigo-600" size={18} />,
+    cash: <Wallet className="text-green-600" size={18} />,
   };
+  return icons[method.toLowerCase()] || <Wallet className="text-gray-600" size={18} />;
+};
 
   // Method Badge
   const MethodBadge = ({ method }: { method: string }) => {

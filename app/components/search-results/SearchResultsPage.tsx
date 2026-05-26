@@ -16,7 +16,7 @@ import { AIRLINE_FILTERS } from "./airlineData";
 
 export default function SearchResultsPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams();// URLSearchParams instance for reading query params
   const [flights, setFlights] = useState<FlightData[]>([]);
   const [expandedFlight, setExpandedFlight] = useState<string | null>(null);
   const [selectedAirline, setSelectedAirline] = useState("ALL");
@@ -31,22 +31,23 @@ export default function SearchResultsPage() {
 
   // ==================== FETCH ====================
 
-  useEffect(() => {
+  useEffect(() => {// Fetch flight data whenever search parameters change
     const fetchFlights = async () => {
       setIsLoading(true);
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
-        const params = new URLSearchParams(searchParams.toString());
+        const controller = new AbortController();//JavaScript/browser built-in class to control and cancel fetch requests
+        const timeoutId = setTimeout(() => controller.abort(), 60000);// 60-second timeout to prevent hanging requests
+        
+        const params = new URLSearchParams(searchParams.toString());// Clone to modify Fetch API doesn't allow direct mutation of searchParams, so we create a new instance
         if (!params.get("provider")) params.set("provider", "all");
 
         const data = await apiClient(
-          `/flights/search?${params.toString()}`,
+          `/flights/search?${params.toString()}`,// Fetch flight data based on current search parameters, with abort signal for timeout
           { signal: controller.signal } as RequestInit
         );
         clearTimeout(timeoutId);
 
-        if (data.meta?.isFallback) console.warn("⚠️ Showing fallback flights");
+        if (data.meta?.isFallback) console.warn("⚠️ Showing fallback flights");// If API indicates these are fallback results, log a warning (could be used to trigger UI indicators in the future)
 
         const flightData = data.data || [];
         setFlights(flightData);
@@ -68,7 +69,7 @@ export default function SearchResultsPage() {
     fetchFlights();
   }, [searchParams]);
 
-  useEffect(() => {
+  useEffect(() => {// It use only for setting default provider=all if not present in URL.Just URL Normalization to ensure consistent behavior across the app. It does not trigger a new fetch since the first useEffect already handles that based on searchParams changes.
     const params = new URLSearchParams(searchParams.toString());
     if (!params.get("provider")) {
       params.set("provider", "all");

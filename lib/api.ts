@@ -20,6 +20,7 @@ const forceLogout = (reason = "Session expired") => {
 
 type ApiClientOptions = RequestInit & {
   skipAuthRedirect?: boolean;
+  skipAuthToken?: boolean;
 };
 
 export const apiClient = async (
