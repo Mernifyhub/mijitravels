@@ -48,56 +48,48 @@ export default function UserLedgerPage() {
   const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   // ── Fetch ──
-  const fetchLedgerData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.set("page", page.toString());
-      params.set("limit", pageSize.toString());
-      if (searchQuery) params.set("search", searchQuery);
-      if (typeFilter) params.set("type", typeFilter.toLowerCase());
-      if (dateFrom) params.set("startDate", dateFrom);
-      if (dateTo) params.set("endDate", dateTo);
+const fetchLedgerData = useCallback(async () => {
+  setLoading(true);
+  try {
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+    params.set("limit", pageSize.toString());
+    if (searchQuery) params.set("search", searchQuery);
+    if (typeFilter) params.set("type", typeFilter.toLowerCase());
+    if (dateFrom) params.set("startDate", dateFrom);
+    if (dateTo) params.set("endDate", dateTo);
 
-      const result = await apiClient(`/ledger?${params.toString()}`);
-      const entries: LedgerEntry[] = result.entries || [];
+    const result = await apiClient(`/ledger?${params.toString()}`);
+    const entries: LedgerEntry[] = result.entries || [];
 
-      // Running balance
-      let runningBalance = result.summary?.currentBalance || 0;
-      const reversed = [...entries].reverse();
-      const withBalance = reversed.map((entry) => {
-        const bal = runningBalance;
-        if (entry.isCredit) runningBalance -= entry.credit;
-        else runningBalance += entry.debit;
-        return { ...entry, balance: bal };
-      });
-      withBalance.reverse();
+    // ✅ Backend থেকে আসা balanceAfter সরাসরি use করো
+    // ❌ নিজে running balance calculate করবে না
+    setData(entries);
 
-      setData(withBalance);
-      setTotalRecords(result.pagination?.total || 0);
-      setTotalPages(result.pagination?.totalPages || 0);
-      setSummary({
-        currentBalance: result.summary?.currentBalance || 0,
-        totalCredit: result.summary?.totalCredit || 0,
-        totalDebit: result.summary?.totalDebit || 0,
-        totalTransactions: result.summary?.totalTransactions || 0,
-        creditLimit: result.summary?.creditLimit || 0,
-        usedLimit: result.summary?.usedLimit || 0,
-        depositTotal: result.summary?.depositTotal || 0,
-        bookingTotal: result.summary?.bookingTotal || 0,
-        pendingDepositTotal: result.summary?.pendingDepositTotal || 0,
-      });
-    } catch (error: any) {
-      if (String(error?.message).includes("401")) {
-        window.location.href = "/login";
-        return;
-      }
-      addToast("Failed to fetch ledger data", "error");
-      setData([]);
-    } finally {
-      setLoading(false);
+    setTotalRecords(result.pagination?.total || 0);
+    setTotalPages(result.pagination?.totalPages || 0);
+    setSummary({
+      currentBalance: result.summary?.currentBalance || 0,
+      totalCredit: result.summary?.totalCredit || 0,
+      totalDebit: result.summary?.totalDebit || 0,
+      totalTransactions: result.summary?.totalTransactions || 0,
+      creditLimit: result.summary?.creditLimit || 0,
+      usedLimit: result.summary?.usedLimit || 0,
+      depositTotal: result.summary?.depositTotal || 0,
+      bookingTotal: result.summary?.bookingTotal || 0,
+      pendingDepositTotal: result.summary?.pendingDepositTotal || 0,
+    });
+  } catch (error: any) {
+    if (String(error?.message).includes("401")) {
+      window.location.href = "/login";
+      return;
     }
-  }, [page, pageSize, searchQuery, typeFilter, dateFrom, dateTo, addToast]);
+    addToast("Failed to fetch ledger data", "error");
+    setData([]);
+  } finally {
+    setLoading(false);
+  }
+}, [page, pageSize, searchQuery, typeFilter, dateFrom, dateTo, addToast]);
 
   useEffect(() => { fetchLedgerData(); }, [fetchLedgerData]);
 
@@ -329,9 +321,12 @@ export default function UserLedgerPage() {
                   {data.length > 0 ? data.map((item) => {
                     const tc = getTypeConfig(item.type);
                     return (
-                      <motion.tr key={item.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="hover:bg-slate-50/80 transition">
-
+                      <motion.tr
+                        key={item.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="hover:bg-slate-50/80 transition"
+                      >
                         {/* Date */}
                         <td className="px-3 py-3">
                           <div className="flex items-center gap-2">
@@ -339,30 +334,42 @@ export default function UserLedgerPage() {
                               <Calendar size={14} className="text-slate-500" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-slate-800 whitespace-nowrap">{formatDate(item.date)}</p>
-                              <p className="text-xs text-slate-400">{formatTime(item.date)}</p>
+                              <p className="text-sm font-medium text-slate-800 whitespace-nowrap">
+                                {formatDate(item.date)}
+                              </p>
+                              <p className="text-xs text-slate-400">
+                                {formatTime(item.date)}
+                              </p>
                             </div>
                           </div>
                         </td>
 
                         {/* Reference */}
                         <td className="px-3 py-3">
-                          <button onClick={() => setSelectedEntry(item)}
-                            className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition whitespace-nowrap">
-                            <FileText size={11} />{item.reference}
+                          <button
+                            onClick={() => setSelectedEntry(item)}
+                            className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded-lg text-xs font-semibold transition whitespace-nowrap"
+                          >
+                            <FileText size={11} />
+                            {item.reference}
                           </button>
                         </td>
 
                         {/* Description */}
                         <td className="px-3 py-3">
-                          <p className="text-sm text-slate-700 max-w-[220px] truncate" title={item.description}>
+                          <p
+                            className="text-sm text-slate-700 max-w-[220px] truncate"
+                            title={item.description}
+                          >
                             {item.description}
                           </p>
                         </td>
 
                         {/* Type */}
                         <td className="px-3 py-3">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${tc.bg} ${tc.text}`}>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${tc.bg} ${tc.text}`}
+                          >
                             {tc.icon} {item.category}
                           </span>
                         </td>
@@ -371,32 +378,47 @@ export default function UserLedgerPage() {
                         <td className="px-3 py-3 text-right">
                           {item.debit > 0 ? (
                             <span className="text-sm font-semibold text-rose-600 flex items-center justify-end gap-1 whitespace-nowrap">
-                              <ArrowUpRight size={14} />{formatCurrency(item.debit)}
+                              <ArrowUpRight size={14} />
+                              {formatCurrency(item.debit)}
                             </span>
-                          ) : <span className="text-slate-300">-</span>}
+                          ) : (
+                            <span className="text-slate-300">-</span>
+                          )}
                         </td>
 
                         {/* Credit */}
                         <td className="px-3 py-3 text-right">
                           {item.credit > 0 ? (
                             <span className="text-sm font-semibold text-emerald-600 flex items-center justify-end gap-1 whitespace-nowrap">
-                              <ArrowDownLeft size={14} />{formatCurrency(item.credit)}
+                              <ArrowDownLeft size={14} />
+                              {formatCurrency(item.credit)}
                             </span>
-                          ) : <span className="text-slate-300">-</span>}
+                          ) : (
+                            <span className="text-slate-300">-</span>
+                          )}
                         </td>
 
                         {/* Balance */}
                         <td className="px-3 py-3 text-right">
-                          <span className="text-sm font-bold text-slate-800 whitespace-nowrap">
-                            {formatCurrency(item.balance || 0)}
+                          <span
+                            className={`text-sm font-bold whitespace-nowrap ${
+                              Number(item.balanceAfter) < 0
+                                ? "text-rose-600"
+                                : "text-slate-800"
+                            }`}
+                          >
+                            {formatCurrency(item.balanceAfter || 0)}
                           </span>
                         </td>
 
                         {/* Action */}
                         <td className="px-3 py-3">
                           <div className="flex items-center justify-center">
-                            <button onClick={() => setSelectedEntry(item)}
-                              className="p-2 hover:bg-slate-100 rounded-lg transition" title="View">
+                            <button
+                              onClick={() => setSelectedEntry(item)}
+                              className="p-2 hover:bg-slate-100 rounded-lg transition"
+                              title="View"
+                            >
                               <Eye size={16} className="text-slate-500" />
                             </button>
                           </div>

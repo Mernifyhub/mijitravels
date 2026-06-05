@@ -171,3 +171,5 @@ seedDiscounts()
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());
+
+  //npx tsx prisma/seed-discounts.ts

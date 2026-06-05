@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {Search, RotateCcw, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,Plane, Calendar, Users,Clock, CheckCircle2,XCircle, AlertCircle, ArrowUpDown, ArrowUp, 
 ArrowDown, SlidersHorizontal,FileText, RefreshCw, ChevronDown, X, Grid3X3, LayoutList, Settings2,UserCheck, Hash, CreditCard,} from "lucide-react";
@@ -12,9 +11,7 @@ import ColumnSettingsModal from "./ColumnSettingsModal";
 import ToastContainer from "./ToastContainer";
 import TableSkeleton from "./TableSkeleton";
 import { Booking, Toast, Props } from "./types";
-import {
-  getStatusConfig, getPageTitle, formatCurrency, formatDate, ALL_COLUMNS,
-} from "./constants";
+import {getStatusConfig, getPageTitle, formatCurrency, formatDate, ALL_COLUMNS,} from "./constants";
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -27,9 +24,9 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function AgentAllBooking({ defaultStatus = "" }: Props) {
-  const router = useRouter();
+const router = useRouter();
 
-  // ── SWR ──
+  // ── SWR/FETCHING─
   const { data, error, isLoading: loading, isValidating: refreshing, mutate } =
     useSWR<Booking[]>("/bookings/all", apiClient, {
       revalidateOnFocus: false,
@@ -58,7 +55,6 @@ export default function AgentAllBooking({ defaultStatus = "" }: Props) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [visibleColumns, setVisibleColumns] = useState<string[]>(ALL_COLUMNS.map((c) => c.key));
   const [toasts, setToasts] = useState<Toast[]>([]);
-
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debouncedSearch = useDebounce(searchInput, 300);
 
@@ -68,8 +64,7 @@ export default function AgentAllBooking({ defaultStatus = "" }: Props) {
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
   }, []);
-
-  const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
+ const removeToast = (id: string) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
   // ── Refresh ──
   const handleRefresh = useCallback(async () => {

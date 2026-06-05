@@ -66,7 +66,7 @@ const PAYMENT_METHODS = [
     name: "Mobile Banking",
     icon: Smartphone,
     color: "bg-green-500",
-    desc: "bKash, Nagad, Rocket",
+    desc: "STC, bKash, Nagad, Rocket",
   },
   {
     id: "CASH",

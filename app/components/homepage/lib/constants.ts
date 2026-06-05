@@ -1,11 +1,11 @@
 import type { Country, Language } from "./types";
 
 export const COUNTRIES: Country[] = [
-  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦", currency: "SAR", symbol: "﷼", defaultLang: "ar" },
-  { code: "AE", name: "UAE", flag: "🇦🇪", currency: "AED", symbol: "د.إ", defaultLang: "ar" },
-  { code: "BD", name: "Bangladesh", flag: "🇧🇩", currency: "BDT", symbol: "৳", defaultLang: "bn" },
+  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦", currency: "SAR", symbol: "SAR", defaultLang: "ar" },
+  { code: "AE", name: "UAE", flag: "🇦🇪", currency: "AED", symbol: "AED", defaultLang: "ar" },
+  { code: "BD", name: "Bangladesh", flag: "🇧🇩", currency: "BDT", symbol: "TK", defaultLang: "bn" },
   { code: "PK", name: "Pakistan", flag: "🇵🇰", currency: "PKR", symbol: "₨", defaultLang: "en" },
-  { code: "IN", name: "India", flag: "🇮🇳", currency: "INR", symbol: "₹", defaultLang: "en" },
+  { code: "IN", name: "India", flag: "🇮🇳", currency: "INR", symbol: "INR", defaultLang: "en" },
 ];
 
 export const LANGUAGES: Language[] = [
