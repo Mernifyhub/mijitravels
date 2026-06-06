@@ -27,29 +27,29 @@ export default function Navbar() {
   return (
     <nav
       className={`sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b transition-all duration-500 ${
-        isScrolled ? "shadow-xl py-4" : "py-6"
+        isScrolled ? "shadow-xl py-2" : "py-3"
       }`}
     >
       <div className={container}>
         <div className="flex items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <div className="w-11 h-11 bg-gradient-to-br from-[#0A2540] via-[#1e3a5f] to-[#0A2540] rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500">
-                <Plane className="w-6 h-6 text-white" style={{ transform: "rotate(-45deg)" }} />
+              <div className="w-9 h-9 bg-gradient-to-br from-[#0A2540] via-[#1e3a5f] to-[#0A2540] rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500">
+                <Plane className="w-5 h-5 text-white" style={{ transform: "rotate(-45deg)" }} />
               </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#E31E24] rounded-full flex items-center justify-center ring-2 ring-white">
-                <span className="text-[10px] font-bold text-white">M</span>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#E31E24] rounded-full flex items-center justify-center ring-2 ring-white">
+                <span className="text-[9px] font-bold text-white">M</span>
               </div>
             </div>
-            <h1 className="text-4xl font-black tracking-[-2px] text-[#0A2540] group-hover:text-[#E31E24] transition-colors">
-              miji
+            <h1 className="text-2xl font-black tracking-[-1px] text-[#0A2540] group-hover:text-[#E31E24] transition-colors">
+              MIJI
             </h1>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-10 text-[15px] font-semibold text-gray-700">
+          <div className="hidden md:flex items-center gap-8 text-[14px] font-semibold text-gray-700">
             {navItems.map((item) => (
               <Link key={item.label} href={item.href} className="relative py-2 group hover:text-[#0A2540] transition-all">
                 {item.label}
@@ -59,19 +59,19 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Toggle */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-3 rounded-2xl hover:bg-gray-100">
-            {mobileOpen ? <X size={26} /> : <Menu size={26} />}
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-xl hover:bg-gray-100">
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
         {/* Mobile Nav */}
         {mobileOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t pt-4 space-y-3">
+          <div className="md:hidden mt-3 pb-3 border-t pt-3 space-y-2">
             {navItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="block py-3 px-4 rounded-xl hover:bg-gray-100 font-semibold text-gray-700"
+                className="block py-2 px-3 rounded-lg hover:bg-gray-100 font-semibold text-gray-700 text-sm"
                 onClick={() => setMobileOpen(false)}
               >
                 {item.label}

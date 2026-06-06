@@ -75,7 +75,7 @@ export default function Footer() {
                 <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Phone size={16} />
                 </div>
-                <span>+880 1700-000000</span>
+                <span>+966-0560-8992</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -87,7 +87,7 @@ export default function Footer() {
                 <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
                   <MapPin size={16} />
                 </div>
-                <span>Gulshan-1, Dhaka, BD</span>
+                <span>Riyadh, Riyadh Region, KSA</span>
               </div>
             </div>
           </div>
