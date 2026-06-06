@@ -76,15 +76,14 @@ export default function HeroSection() {
   const slide = offers[current];
 
   return (
-    // ✅ FIXED HEIGHT - No scroll-based resize
     <section className="relative w-full h-[450px] flex items-center bg-[#061229] overflow-hidden">
       
-      {/* ✅ Background Image - More Visible */}
+      {/* Background Image */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
           initial={{ scale: 1.05, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.65 }} // ✅ Increased opacity (was 0.4)
+          animate={{ scale: 1, opacity: 0.65 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 bg-cover bg-center"
@@ -92,14 +91,24 @@ export default function HeroSection() {
         />
       </AnimatePresence>
 
-      {/* ✅ Lighter Gradient Overlay - Image More Visible */}
+      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#061229] via-[#061229]/70 to-[#061229]/20" />
 
       <div className={container} style={{ position: "relative", zIndex: 10 }}>
-        <div className={`grid ${showLoginCard ? "lg:grid-cols-12" : "grid-cols-1"} gap-8 items-center`}>
+        
+        {/* ✅ 3 SECTION LAYOUT - DYNAMIC */}
+        <div 
+          className={`grid gap-6 items-center transition-all duration-500 ${
+            showLoginCard 
+              ? "grid-cols-12"  // 3 sections: 7 + 1 + 4
+              : "grid-cols-12"  // 2 sections: 11 + 1 (full width promotion)
+          }`}
+        >
           
-          {/* LEFT - Content (Smaller text) */}
-          <div className={showLoginCard ? "lg:col-span-7" : "max-w-2xl"}>
+          {/* ═══════════════════════════════════════════ */}
+          {/* SECTION 1: PROMOTION TEXT (LEFT)            */}
+          {/* ═══════════════════════════════════════════ */}
+          <div className={`${showLoginCard ? "col-span-12 lg:col-span-7" : "col-span-12 lg:col-span-11"} transition-all duration-500`}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={current}
@@ -108,7 +117,7 @@ export default function HeroSection() {
                 exit={{ opacity: 0, x: 10 }}
                 transition={{ duration: 0.6 }}
               >
-                {/* ✅ Smaller badge */}
+                {/* Badge */}
                 <div className="inline-flex items-center gap-2 bg-indigo-600/10 border border-indigo-500/20 px-3 py-1 rounded-lg mb-4">
                   <Award className="text-indigo-400" size={14} />
                   <span className="text-indigo-100 text-[10px] font-bold uppercase tracking-[1.5px]">
@@ -116,20 +125,32 @@ export default function HeroSection() {
                   </span>
                 </div>
 
-                {/* ✅ Smaller heading */}
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight">
+                {/* ✅ Dynamic heading size based on showLoginCard */}
+                <h1 
+                  className={`font-extrabold text-white leading-[1.1] tracking-tight transition-all duration-500 ${
+                    showLoginCard 
+                      ? "text-3xl md:text-4xl lg:text-5xl"  // Smaller when card visible
+                      : "text-4xl md:text-5xl lg:text-6xl"  // Bigger when card hidden
+                  }`}
+                >
                   {slide.title} <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
                     {slide.highlight}
                   </span>
                 </h1>
 
-                {/* ✅ Smaller description */}
-                <p className="mt-4 text-sm md:text-base text-slate-200 max-w-lg leading-relaxed opacity-95">
+                {/* ✅ Dynamic description */}
+                <p 
+                  className={`mt-4 text-slate-200 leading-relaxed opacity-95 transition-all duration-500 ${
+                    showLoginCard 
+                      ? "text-sm md:text-base max-w-lg"
+                      : "text-base md:text-lg max-w-2xl"
+                  }`}
+                >
                   {slide.desc}
                 </p>
 
-                {/* ✅ Smaller buttons */}
+                {/* Buttons */}
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={slide.link}
@@ -148,7 +169,31 @@ export default function HeroSection() {
             </AnimatePresence>
           </div>
 
-          {/* RIGHT - Login Card (Smaller) */}
+          {/* ═══════════════════════════════════════════ */}
+          {/* SECTION 2: SCROLLING DOTS (CENTER)          */}
+          {/* ═══════════════════════════════════════════ */}
+          <div className="col-span-12 lg:col-span-1 flex lg:flex-col items-center justify-center gap-3">
+            <div className="flex lg:flex-col gap-2">
+              {offers.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrent(i)}
+                  className={`rounded-full transition-all duration-500 ${
+                    current === i 
+                      ? "lg:h-8 lg:w-1 h-1 w-8 bg-cyan-400" 
+                      : "lg:h-3 lg:w-1 h-1 w-3 bg-white/30 hover:bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="text-white/50 text-[10px] font-black tracking-widest uppercase lg:rotate-90 lg:mt-4 whitespace-nowrap">
+              0{current + 1} / 0{offers.length}
+            </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════ */}
+          {/* SECTION 3: LOGIN/REGISTER CARD (RIGHT)      */}
+          {/* ═══════════════════════════════════════════ */}
           <AnimatePresence>
             {showLoginCard && (
               <motion.div
@@ -156,7 +201,7 @@ export default function HeroSection() {
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 30, scale: 0.95 }}
                 transition={{ duration: 0.4 }}
-                className="lg:col-span-5 hidden lg:block"
+                className="col-span-12 lg:col-span-4 hidden lg:block"
               >
                 <div className="relative">
                   {/* Close Button */}
@@ -168,7 +213,6 @@ export default function HeroSection() {
                     <X size={14} className="group-hover:rotate-90 transition-transform" />
                   </button>
 
-                  {/* ✅ Smaller Card */}
                   <div className="bg-white rounded-2xl p-6 shadow-2xl">
                     <div className="text-center mb-4">
                       <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#0A2540] to-[#061229] rounded-xl mb-2">
@@ -207,7 +251,6 @@ export default function HeroSection() {
                       </Link>
                     </div>
 
-                    {/* Compact Help Section */}
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <div className="flex items-center gap-2 bg-amber-50 p-2.5 rounded-lg">
                         <Headphones className="text-amber-600 flex-shrink-0" size={14} />
@@ -228,24 +271,6 @@ export default function HeroSection() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* ✅ Slider Dots - Moved inside */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
-          <div className="flex gap-2">
-            {offers.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className={`h-1 rounded-full transition-all duration-500 ${
-                  current === i ? "w-8 bg-cyan-400" : "w-3 bg-white/30"
-                }`}
-              />
-            ))}
-          </div>
-          <div className="text-white/50 text-[10px] font-black tracking-widest uppercase">
-            0{current + 1} / 0{offers.length}
-          </div>
         </div>
 
         {/* Floating Login Button (when card hidden) */}
