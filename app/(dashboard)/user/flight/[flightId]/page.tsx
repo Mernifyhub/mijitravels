@@ -9,18 +9,17 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
-// Types & Helpers
-import { PassengerForm, UserBalance } from "@/app/components/flight/types";
-import { defaultPassenger } from "@/app/components/flight/constants";
-import { fmtMoney } from "@/app/components/flight/helpers";
+import { PassengerForm, UserBalance } from "@/app/components/agent/flight/types";
+import { defaultPassenger } from "@/app/components/agent/flight/constants";
+import { fmtMoney } from "@/app/components/agent/flight/helpers";
 
 // Components
-import DepositModal       from "@/app/components/flight/DepositModal";
-import BookingNavbar      from "@/app/components/flight/BookingNavbar";
-import InsufficientBanner from "@/app/components/flight/InsufficientBanner";
-import PassengerCard      from "@/app/components/flight/PassengerCard";
-import FlightSummary      from "@/app/components/flight/FlightSummary";
-import SuccessScreen      from "@/app/components/flight/SuccessScreen";
+import DepositModal       from "@/app/components/agent/flight/DepositModal";
+import BookingNavbar      from "@/app/components/agent/flight/BookingNavbar";
+import InsufficientBanner from "@/app/components/agent/flight/InsufficientBanner";
+import PassengerCard      from "@/app/components/agent/flight/PassengerCard";
+import FlightSummary      from "@/app/components/agent/flight/FlightSummary";
+import SuccessScreen      from "@/app/components/agent/flight/SuccessScreen";
 
 // ── Inner component (needs useSearchParams) ──
 function BookingPageInner() {

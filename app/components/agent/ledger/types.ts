@@ -3,20 +3,30 @@ export interface LedgerEntry {
   date: string;
   type: string;
   category: string;
-  description: string;
-  reference: string;
+  sourceType?: string;
+  isCredit?: boolean;
   debit: number;
   credit: number;
-  status: string;
-  isCredit: boolean;
-  meta: Record<string, unknown>;
-  balance?: number;
-}
-
-export interface Toast {
-  id: string;
-  message: string;
-  type: "success" | "error" | "info" | "warning";
+  balanceAfter: number;
+  balance?: number;          // ← এটা add করুন
+  description: string;
+  reference: string;
+  invoiceNo?: string;
+  pnr?: string;
+  systemPnr?: string;
+  status?: string;
+  meta?: {
+    pnr?: string;
+    systemPnr?: string;
+    bookingId?: string;
+    depositId?: string;
+    operationId?: string;
+    flightDate?: string;
+    note?: string;
+    createdBy?: string;
+    sourceId?: string;
+    currency?: string;
+  };
 }
 
 export interface LedgerSummary {
@@ -29,4 +39,13 @@ export interface LedgerSummary {
   depositTotal: number;
   bookingTotal: number;
   pendingDepositTotal: number;
+  rawBalance?: number;
+  availableCredit?: number;
+  totalAvailableToBook?: number;
+}
+
+export interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error" | "info" | "warning";
 }
