@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, UploadCloud, CheckCircle2, PlaneTakeoff, ShieldCheck, Zap } from "lucide-react";
 import { motion } from "framer-motion";
-import { apiClient } from "@/lib/apiClient"; // ⚠️ তোমার apiClient path অনুযায়ী adjust করো
+import { apiClient } from "@/lib/api"; // ⚠️ তোমার apiClient path অনুযায়ী adjust করো
 
 export default function AgentRegistration() {
   const [showPass, setShowPass] = useState(false);
