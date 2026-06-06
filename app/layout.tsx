@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
 import "./globals.css";
-
+import AppProvider from "./components/homepage/providers/AppProvider";
 import { Montserrat } from "next/font/google";
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
   title: "MIJI",
-  description: "MIJI The best B2B Travel Portal",
+  description: "Best booking experience for travel agents in the Middle East and South Asia",
 };
 
 export default function RootLayout({
@@ -16,8 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={montserrat.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={montserrat.className}>
+        <AppProvider>{children}</AppProvider>
+      </body>
     </html>
   );
 }
