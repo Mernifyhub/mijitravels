@@ -1,233 +1,265 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { 
-  ArrowRight, 
-  CheckCircle2, 
-  Plane, 
-  Building2, 
-  Users, 
-  TrendingUp,
-  Shield,
-  Headphones,
-  Globe
-} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Award, ArrowRight, Plane, Headphones, X } from "lucide-react";
 import useApp from "./hooks/useApp";
+
+const offers = [
+  {
+    badge: "Trusted by 2 Million+",
+    title: "Experience the World",
+    highlight: "Like Never Before",
+    desc: "Seamlessly book flights to over 500+ global destinations with our exclusive deals.",
+    image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074",
+    link: "#deals",
+  },
+  {
+    badge: "Exclusive Tropical Offer",
+    title: "Escape to the",
+    highlight: "Maldives Paradise",
+    desc: "Special honeymoon packages and direct flight fares starting from only ৳38,500.",
+    image: "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=2070",
+    link: "#maldives",
+  },
+  {
+    badge: "Spiritual Journey",
+    title: "Premium & Custom",
+    highlight: "Umrah Packages",
+    desc: "Perform your Umrah with ease. Includes premium hotels near Haram and direct flights.",
+    image: "https://images.unsplash.com/photo-1564769662533-4f00a87b4056?q=80&w=2070",
+    link: "#umrah",
+  },
+  {
+    badge: "Urban Adventure",
+    title: "Discover the Neon",
+    highlight: "Lights of Tokyo",
+    desc: "Get up to 15% discount on Japan Airlines and All Nippon Airways this season.",
+    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=2070",
+    link: "#tokyo",
+  },
+  {
+    badge: "European Dream",
+    title: "The Magic of Paris",
+    highlight: "Starting at ৳65,000",
+    desc: "Fly to the city of lights. Early bird discounts available for summer 2024 bookings.",
+    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073",
+    link: "#paris",
+  },
+];
 
 export default function HeroSection() {
   const { t, container } = useApp();
+  const [current, setCurrent] = useState(0);
+  const [showLoginCard, setShowLoginCard] = useState(true); // ✅ Login card visibility state
 
-  const trustStats = [
-    { value: "500+", label: "Airlines", icon: Plane },
-    { value: "2,000+", label: "Active Agents", icon: Building2 },
-    { value: "150+", label: "Countries", icon: Globe },
-    { value: "24/7", label: "Support", icon: Headphones },
-  ];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev === offers.length - 1 ? 0 : prev + 1));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const features = [
-    "Real-time GDS Integration",
-    "Competitive Net Rates",
-    "Instant Booking Confirmation",
-    "Dedicated Account Manager",
-  ];
+  // ✅ Optional: Remember user's choice in localStorage
+  useEffect(() => {
+    const isHidden = localStorage.getItem("hero_login_hidden");
+    if (isHidden === "true") {
+      setShowLoginCard(false);
+    }
+  }, []);
+
+  const handleHideLoginCard = () => {
+    setShowLoginCard(false);
+    localStorage.setItem("hero_login_hidden", "true");
+  };
+
+  const slide = offers[current];
 
   return (
-    <section className="relative bg-gradient-to-br from-[#0A2540] via-[#0d2d4f] to-[#061229] overflow-hidden">
-      {/* Subtle Background Pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)',
-          backgroundSize: '30px 30px',
-        }}
-      />
+    <section className="relative h-[520px] flex items-center bg-[#061229] overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={slide.image}
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.4 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 2, ease: "linear" }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${slide.image})` }}
+        />
+      </AnimatePresence>
 
-      {/* Top Accent Line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#061229] via-[#061229]/60 to-transparent" />
 
-      <div className={`${container} relative py-16 md:py-20`}>
-        <div className="grid lg:grid-cols-12 gap-12 items-center">
+      <div className={container} style={{ position: "relative", zIndex: 10 }}>
+        <div className={`grid ${showLoginCard ? "lg:grid-cols-12" : "grid-cols-1"} gap-8 items-center`}>
           
-          {/* LEFT - Main Content */}
-          <div className="lg:col-span-7">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* Trust Badge */}
-              <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 px-4 py-2 rounded-full mb-6">
-                <Shield className="text-cyan-400" size={14} />
-                <span className="text-cyan-100 text-xs font-semibold tracking-wide">
-                  IATA Certified • Trusted by 2,000+ Agencies
-                </span>
-              </div>
-
-              {/* Main Headline */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
-                B2B Travel Portal for
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                  Modern Travel Agencies
-                </span>
-              </h1>
-
-              {/* Subheading */}
-              <p className="mt-6 text-base md:text-lg text-slate-300 max-w-xl leading-relaxed">
-                Access the best fares from 500+ airlines, manage bookings effortlessly, 
-                and grow your travel business with our enterprise-grade platform.
-              </p>
-
-              {/* Feature List */}
-              <div className="mt-8 grid sm:grid-cols-2 gap-3">
-                {features.map((feature, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + i * 0.1 }}
-                    className="flex items-center gap-2 text-slate-200"
-                  >
-                    <CheckCircle2 className="text-cyan-400 flex-shrink-0" size={18} />
-                    <span className="text-sm">{feature}</span>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* CTA Buttons */}
-              <div className="mt-10 flex flex-wrap gap-4">
-                <Link
-                  href="/register"
-                  className="group bg-white text-[#0A2540] px-7 py-4 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-cyan-50 transition-all shadow-xl"
-                >
-                  Become an Agent
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="bg-transparent border-2 border-white/20 text-white px-7 py-4 rounded-lg font-bold text-sm hover:bg-white/5 hover:border-white/40 transition-all"
-                >
-                  Agent Login
-                </Link>
-              </div>
-
-              {/* Trust Indicators */}
-              <div className="mt-10 pt-8 border-t border-white/10">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-4 font-semibold">
-                  Trusted Partners
-                </p>
-                <div className="flex flex-wrap items-center gap-6 opacity-60">
-                  <div className="text-white font-bold text-sm tracking-wider">IATA</div>
-                  <div className="text-white font-bold text-sm tracking-wider">BAR</div>
-                  <div className="text-white font-bold text-sm tracking-wider">ATAB</div>
-                  <div className="text-white font-bold text-sm tracking-wider">TAAB</div>
+          {/* LEFT - Original Content */}
+          <div className={showLoginCard ? "lg:col-span-7" : "max-w-2xl"}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.6 }}
+              >
+                <div className="inline-flex items-center gap-2 bg-indigo-600/10 border border-indigo-500/20 px-4 py-1.5 rounded-lg mb-6">
+                  <Award className="text-indigo-400" size={16} />
+                  <span className="text-indigo-100 text-[11px] font-bold uppercase tracking-[1.5px]">
+                    {slide.badge}
+                  </span>
                 </div>
-              </div>
-            </motion.div>
+
+                <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
+                  {slide.title} <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                    {slide.highlight}
+                  </span>
+                </h1>
+
+                <p className="mt-6 text-lg text-slate-300 max-w-lg leading-relaxed opacity-90">
+                  {slide.desc}
+                </p>
+
+                <div className="mt-10 flex flex-wrap gap-4">
+                  <Link
+                    href={slide.link}
+                    className="bg-white text-[#061229] px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 hover:bg-cyan-50 transition-all shadow-lg active:scale-95"
+                  >
+                    {t.hero.checkOffers} <ArrowRight size={18} />
+                  </Link>
+                  <Link
+                    href="#routes"
+                    className="bg-white/5 border border-white/20 text-white px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white/10 transition-all backdrop-blur-sm"
+                  >
+                    {t.hero.popularRoutes}
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          {/* RIGHT - Login Card or Quick Action */}
-          <div className="lg:col-span-5">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="bg-white rounded-2xl p-8 shadow-2xl">
-                {/* Card Header */}
-                <div className="text-center mb-6">
-                  <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-[#0A2540] to-[#061229] rounded-xl mb-3">
-                    <Plane className="text-white" size={26} style={{ transform: "rotate(-45deg)" }} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-[#0A2540]">
-                    Agent Portal
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Access your dashboard instantly
-                  </p>
-                </div>
-
-                {/* Quick Login Options */}
-                <div className="space-y-3">
-                  <Link
-                    href="/login"
-                    className="block w-full bg-[#0A2540] text-white text-center py-4 rounded-xl font-bold text-sm hover:bg-[#0d2d4f] transition-all shadow-md"
+          {/* RIGHT - Login Card (Dynamic Hide/Show) */}
+          <AnimatePresence>
+            {showLoginCard && (
+              <motion.div
+                initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 30, scale: 0.95 }}
+                transition={{ duration: 0.4 }}
+                className="lg:col-span-5 hidden lg:block"
+              >
+                <div className="relative">
+                  {/* ✅ Close Button */}
+                  <button
+                    onClick={handleHideLoginCard}
+                    className="absolute -top-3 -right-3 z-20 w-8 h-8 bg-white text-gray-600 rounded-full shadow-lg hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center group"
+                    title="Hide login card"
                   >
-                    Login to Dashboard
-                  </Link>
+                    <X size={16} className="group-hover:rotate-90 transition-transform" />
+                  </button>
 
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200" />
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-3 text-gray-400">NEW HERE?</span>
-                    </div>
-                  </div>
-
-                  <Link
-                    href="/register"
-                    className="block w-full bg-cyan-50 text-[#0A2540] text-center py-4 rounded-xl font-bold text-sm hover:bg-cyan-100 transition-all border-2 border-cyan-100"
-                  >
-                    Register as Agent
-                  </Link>
-                </div>
-
-                {/* Help Section */}
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="flex items-start gap-3 bg-amber-50 p-3 rounded-lg">
-                    <Headphones className="text-amber-600 flex-shrink-0 mt-0.5" size={16} />
-                    <div className="text-xs">
-                      <p className="font-bold text-amber-900">Need Help?</p>
-                      <p className="text-amber-700 mt-0.5">
-                        Call us: <strong>+880 1XXX-XXXXXX</strong>
+                  <div className="bg-white rounded-2xl p-8 shadow-2xl">
+                    {/* Card Header */}
+                    <div className="text-center mb-6">
+                      <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-[#0A2540] to-[#061229] rounded-xl mb-3">
+                        <Plane className="text-white" size={26} style={{ transform: "rotate(-45deg)" }} />
+                      </div>
+                      <h3 className="text-2xl font-bold text-[#0A2540]">
+                        Agent Portal
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Access your dashboard instantly
                       </p>
                     </div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Decorative Background */}
-              <div className="absolute -top-4 -right-4 w-full h-full bg-cyan-400/10 rounded-2xl -z-10" />
-              <div className="absolute -bottom-4 -left-4 w-full h-full bg-blue-400/10 rounded-2xl -z-20" />
-            </motion.div>
+                    {/* Login/Register Buttons */}
+                    <div className="space-y-3">
+                      <Link
+                        href="/login"
+                        className="block w-full bg-[#0A2540] text-white text-center py-4 rounded-xl font-bold text-sm hover:bg-[#0d2d4f] transition-all shadow-md"
+                      >
+                        Login to Dashboard
+                      </Link>
+
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-white px-3 text-gray-400">NEW HERE?</span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href="/register"
+                        className="block w-full bg-cyan-50 text-[#0A2540] text-center py-4 rounded-xl font-bold text-sm hover:bg-cyan-100 transition-all border-2 border-cyan-100"
+                      >
+                        Register as Agent
+                      </Link>
+                    </div>
+
+                    {/* Help Section */}
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                      <div className="flex items-start gap-3 bg-amber-50 p-3 rounded-lg">
+                        <Headphones className="text-amber-600 flex-shrink-0 mt-0.5" size={16} />
+                        <div className="text-xs">
+                          <p className="font-bold text-amber-900">Need Help?</p>
+                          <p className="text-amber-700 mt-0.5">
+                            Call us: <strong>+880 1XXX-XXXXXX</strong>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Decorative Background */}
+                  <div className="absolute -top-4 -right-4 w-full h-full bg-cyan-400/10 rounded-2xl -z-10" />
+                  <div className="absolute -bottom-4 -left-4 w-full h-full bg-blue-400/10 rounded-2xl -z-20" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Slider Dots */}
+        <div className="absolute -bottom-16 left-0 flex items-center gap-6">
+          <div className="flex gap-2">
+            {offers.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                className={`h-1 rounded-full transition-all duration-500 ${
+                  current === i ? "w-10 bg-cyan-400" : "w-4 bg-white/20"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="text-white/40 text-[10px] font-black tracking-widest uppercase">
+            0{current + 1} / 0{offers.length}
           </div>
         </div>
 
-        {/* Stats Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-16 pt-10 border-t border-white/10"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {trustStats.map((stat, i) => {
-              const Icon = stat.icon;
-              return (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                    <Icon className="text-cyan-400" size={22} />
-                  </div>
-                  <div>
-                    <div className="text-2xl md:text-3xl font-bold text-white">
-                      {stat.value}
-                    </div>
-                    <div className="text-xs text-slate-400 uppercase tracking-wider">
-                      {stat.label}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
+        {/* ✅ Show Login Card Button (when hidden) */}
+        {!showLoginCard && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={() => {
+              setShowLoginCard(true);
+              localStorage.removeItem("hero_login_hidden");
+            }}
+            className="fixed bottom-8 right-8 z-50 bg-white text-[#0A2540] px-5 py-3 rounded-full shadow-2xl font-bold text-sm flex items-center gap-2 hover:scale-105 transition-transform"
+          >
+            <Plane size={16} style={{ transform: "rotate(-45deg)" }} />
+            Agent Login
+          </motion.button>
+        )}
       </div>
 
-      {/* Bottom Accent */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-cyan-500/5 to-transparent pointer-events-none" />
     </section>
   );
 }
