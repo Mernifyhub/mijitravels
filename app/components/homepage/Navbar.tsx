@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Plane, Menu, X } from "lucide-react";
 import useApp from "./hooks/useApp";
 
 export default function Navbar() {
   const { t, container } = useApp();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -16,12 +18,13 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
+  // ✅ Updated with /pages/ prefix
   const navItems = [
-    { label: t.nav.flights, href: "#" },
-    { label: t.nav.hotels, href: "#" },
-    { label: t.nav.umrah, href: "#" },
-    { label: t.nav.visa, href: "#" },
-    { label: t.nav.holidays, href: "#" },
+    { label: t.nav.flights, href: "/pages/flights" },
+    { label: t.nav.hotels, href: "/pages/hotels" },
+    { label: t.nav.umrah, href: "/pages/umrah" },
+    { label: t.nav.visa, href: "/pages/visa" },
+    { label: t.nav.holidays, href: "/pages/holidays" },
   ];
 
   return (
@@ -50,16 +53,32 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 text-[14px] font-semibold text-gray-700">
-            {navItems.map((item) => (
-              <Link key={item.label} href={item.href} className="relative py-2 group hover:text-[#0A2540] transition-all">
-                {item.label}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 bg-[#E31E24] group-hover:w-6 transition-all duration-300" />
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`relative py-2 group transition-all ${
+                    isActive ? "text-[#E31E24]" : "hover:text-[#0A2540]"
+                  }`}
+                >
+                  {item.label}
+                  <span
+                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] bg-[#E31E24] transition-all duration-300 ${
+                      isActive ? "w-6" : "w-0 group-hover:w-6"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
           </div>
 
           {/* Mobile Toggle */}
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 rounded-xl hover:bg-gray-100">
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 rounded-xl hover:bg-gray-100"
+          >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
@@ -67,16 +86,23 @@ export default function Navbar() {
         {/* Mobile Nav */}
         {mobileOpen && (
           <div className="md:hidden mt-3 pb-3 border-t pt-3 space-y-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="block py-2 px-3 rounded-lg hover:bg-gray-100 font-semibold text-gray-700 text-sm"
-                onClick={() => setMobileOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`block py-2 px-3 rounded-lg font-semibold text-sm transition-all ${
+                    isActive
+                      ? "bg-red-50 text-[#E31E24]"
+                      : "hover:bg-gray-100 text-gray-700"
+                  }`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
