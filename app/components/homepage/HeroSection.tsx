@@ -52,7 +52,7 @@ const offers = [
 export default function HeroSection() {
   const { t, container } = useApp();
   const [current, setCurrent] = useState(0);
-  const [showLoginCard, setShowLoginCard] = useState(true); // ✅ Login card visibility state
+  const [showLoginCard, setShowLoginCard] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -61,7 +61,6 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, []);
 
-  // ✅ Optional: Remember user's choice in localStorage
   useEffect(() => {
     const isHidden = localStorage.getItem("hero_login_hidden");
     if (isHidden === "true") {
@@ -77,25 +76,29 @@ export default function HeroSection() {
   const slide = offers[current];
 
   return (
-    <section className="relative h-[520px] flex items-center bg-[#061229] overflow-hidden">
+    // ✅ FIXED HEIGHT - No scroll-based resize
+    <section className="relative w-full h-[450px] flex items-center bg-[#061229] overflow-hidden">
+      
+      {/* ✅ Background Image - More Visible */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.image}
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.4 }}
+          initial={{ scale: 1.05, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.65 }} // ✅ Increased opacity (was 0.4)
           exit={{ opacity: 0 }}
-          transition={{ duration: 2, ease: "linear" }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${slide.image})` }}
         />
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-[#061229] via-[#061229]/60 to-transparent" />
+      {/* ✅ Lighter Gradient Overlay - Image More Visible */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#061229] via-[#061229]/70 to-[#061229]/20" />
 
       <div className={container} style={{ position: "relative", zIndex: 10 }}>
         <div className={`grid ${showLoginCard ? "lg:grid-cols-12" : "grid-cols-1"} gap-8 items-center`}>
           
-          {/* LEFT - Original Content */}
+          {/* LEFT - Content (Smaller text) */}
           <div className={showLoginCard ? "lg:col-span-7" : "max-w-2xl"}>
             <AnimatePresence mode="wait">
               <motion.div
@@ -105,34 +108,38 @@ export default function HeroSection() {
                 exit={{ opacity: 0, x: 10 }}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center gap-2 bg-indigo-600/10 border border-indigo-500/20 px-4 py-1.5 rounded-lg mb-6">
-                  <Award className="text-indigo-400" size={16} />
-                  <span className="text-indigo-100 text-[11px] font-bold uppercase tracking-[1.5px]">
+                {/* ✅ Smaller badge */}
+                <div className="inline-flex items-center gap-2 bg-indigo-600/10 border border-indigo-500/20 px-3 py-1 rounded-lg mb-4">
+                  <Award className="text-indigo-400" size={14} />
+                  <span className="text-indigo-100 text-[10px] font-bold uppercase tracking-[1.5px]">
                     {slide.badge}
                   </span>
                 </div>
 
-                <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
+                {/* ✅ Smaller heading */}
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight">
                   {slide.title} <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
                     {slide.highlight}
                   </span>
                 </h1>
 
-                <p className="mt-6 text-lg text-slate-300 max-w-lg leading-relaxed opacity-90">
+                {/* ✅ Smaller description */}
+                <p className="mt-4 text-sm md:text-base text-slate-200 max-w-lg leading-relaxed opacity-95">
                   {slide.desc}
                 </p>
 
-                <div className="mt-10 flex flex-wrap gap-4">
+                {/* ✅ Smaller buttons */}
+                <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     href={slide.link}
-                    className="bg-white text-[#061229] px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 hover:bg-cyan-50 transition-all shadow-lg active:scale-95"
+                    className="bg-white text-[#061229] px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2 hover:bg-cyan-50 transition-all shadow-lg active:scale-95"
                   >
-                    {t.hero.checkOffers} <ArrowRight size={18} />
+                    {t.hero.checkOffers} <ArrowRight size={14} />
                   </Link>
                   <Link
                     href="#routes"
-                    className="bg-white/5 border border-white/20 text-white px-8 py-4 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-white/10 transition-all backdrop-blur-sm"
+                    className="bg-white/5 border border-white/20 text-white px-6 py-3 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition-all backdrop-blur-sm"
                   >
                     {t.hero.popularRoutes}
                   </Link>
@@ -141,7 +148,7 @@ export default function HeroSection() {
             </AnimatePresence>
           </div>
 
-          {/* RIGHT - Login Card (Dynamic Hide/Show) */}
+          {/* RIGHT - Login Card (Smaller) */}
           <AnimatePresence>
             {showLoginCard && (
               <motion.div
@@ -152,97 +159,96 @@ export default function HeroSection() {
                 className="lg:col-span-5 hidden lg:block"
               >
                 <div className="relative">
-                  {/* ✅ Close Button */}
+                  {/* Close Button */}
                   <button
                     onClick={handleHideLoginCard}
-                    className="absolute -top-3 -right-3 z-20 w-8 h-8 bg-white text-gray-600 rounded-full shadow-lg hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center group"
+                    className="absolute -top-2 -right-2 z-20 w-7 h-7 bg-white text-gray-600 rounded-full shadow-lg hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center group"
                     title="Hide login card"
                   >
-                    <X size={16} className="group-hover:rotate-90 transition-transform" />
+                    <X size={14} className="group-hover:rotate-90 transition-transform" />
                   </button>
 
-                  <div className="bg-white rounded-2xl p-8 shadow-2xl">
-                    {/* Card Header */}
-                    <div className="text-center mb-6">
-                      <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-[#0A2540] to-[#061229] rounded-xl mb-3">
-                        <Plane className="text-white" size={26} style={{ transform: "rotate(-45deg)" }} />
+                  {/* ✅ Smaller Card */}
+                  <div className="bg-white rounded-2xl p-6 shadow-2xl">
+                    <div className="text-center mb-4">
+                      <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#0A2540] to-[#061229] rounded-xl mb-2">
+                        <Plane className="text-white" size={22} style={{ transform: "rotate(-45deg)" }} />
                       </div>
-                      <h3 className="text-2xl font-bold text-[#0A2540]">
+                      <h3 className="text-xl font-bold text-[#0A2540]">
                         Agent Portal
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         Access your dashboard instantly
                       </p>
                     </div>
 
-                    {/* Login/Register Buttons */}
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                       <Link
                         href="/login"
-                        className="block w-full bg-[#0A2540] text-white text-center py-4 rounded-xl font-bold text-sm hover:bg-[#0d2d4f] transition-all shadow-md"
+                        className="block w-full bg-[#0A2540] text-white text-center py-3 rounded-lg font-bold text-xs hover:bg-[#0d2d4f] transition-all shadow-md"
                       >
-                        Login to Dashboard
+                        LOGIN TO DASHBOARD
                       </Link>
 
-                      <div className="relative my-4">
+                      <div className="relative my-3">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-gray-200" />
                         </div>
-                        <div className="relative flex justify-center text-xs">
-                          <span className="bg-white px-3 text-gray-400">NEW HERE?</span>
+                        <div className="relative flex justify-center text-[10px]">
+                          <span className="bg-white px-2 text-gray-400 font-semibold">NEW HERE?</span>
                         </div>
                       </div>
 
                       <Link
                         href="/register"
-                        className="block w-full bg-cyan-50 text-[#0A2540] text-center py-4 rounded-xl font-bold text-sm hover:bg-cyan-100 transition-all border-2 border-cyan-100"
+                        className="block w-full bg-cyan-50 text-[#0A2540] text-center py-3 rounded-lg font-bold text-xs hover:bg-cyan-100 transition-all border-2 border-cyan-100"
                       >
-                        Register as Agent
+                        REGISTER AS AGENT
                       </Link>
                     </div>
 
-                    {/* Help Section */}
-                    <div className="mt-6 pt-6 border-t border-gray-100">
-                      <div className="flex items-start gap-3 bg-amber-50 p-3 rounded-lg">
-                        <Headphones className="text-amber-600 flex-shrink-0 mt-0.5" size={16} />
-                        <div className="text-xs">
-                          <p className="font-bold text-amber-900">Need Help?</p>
-                          <p className="text-amber-700 mt-0.5">
-                            Call us: <strong>+880 1XXX-XXXXXX</strong>
-                          </p>
+                    {/* Compact Help Section */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-2 bg-amber-50 p-2.5 rounded-lg">
+                        <Headphones className="text-amber-600 flex-shrink-0" size={14} />
+                        <div className="text-[11px]">
+                          <span className="font-bold text-amber-900">Need Help? </span>
+                          <span className="text-amber-700">
+                            <strong>+880 1XXX-XXXXXX</strong>
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Decorative Background */}
-                  <div className="absolute -top-4 -right-4 w-full h-full bg-cyan-400/10 rounded-2xl -z-10" />
-                  <div className="absolute -bottom-4 -left-4 w-full h-full bg-blue-400/10 rounded-2xl -z-20" />
+                  <div className="absolute -top-3 -right-3 w-full h-full bg-cyan-400/10 rounded-2xl -z-10" />
+                  <div className="absolute -bottom-3 -left-3 w-full h-full bg-blue-400/10 rounded-2xl -z-20" />
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Slider Dots */}
-        <div className="absolute -bottom-16 left-0 flex items-center gap-6">
+        {/* ✅ Slider Dots - Moved inside */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
           <div className="flex gap-2">
             {offers.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
                 className={`h-1 rounded-full transition-all duration-500 ${
-                  current === i ? "w-10 bg-cyan-400" : "w-4 bg-white/20"
+                  current === i ? "w-8 bg-cyan-400" : "w-3 bg-white/30"
                 }`}
               />
             ))}
           </div>
-          <div className="text-white/40 text-[10px] font-black tracking-widest uppercase">
+          <div className="text-white/50 text-[10px] font-black tracking-widest uppercase">
             0{current + 1} / 0{offers.length}
           </div>
         </div>
 
-        {/* ✅ Show Login Card Button (when hidden) */}
+        {/* Floating Login Button (when card hidden) */}
         {!showLoginCard && (
           <motion.button
             initial={{ opacity: 0, scale: 0 }}
@@ -259,7 +265,8 @@ export default function HeroSection() {
         )}
       </div>
 
-      <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-cyan-500/5 to-transparent pointer-events-none" />
+      {/* Subtle Side Glow */}
+      <div className="absolute top-0 right-0 w-1/4 h-full bg-gradient-to-l from-cyan-500/5 to-transparent pointer-events-none" />
     </section>
   );
 }
