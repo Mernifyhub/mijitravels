@@ -6,7 +6,7 @@ import AppProvider from "./components/homepage/providers/AppProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Miji Travels - Premium Flight Booking",
+  title: "MIJI-TRAVELS -Best B2B Travel Portal",
   description: "Book flights, hotels, umrah packages and more",
 };
 
