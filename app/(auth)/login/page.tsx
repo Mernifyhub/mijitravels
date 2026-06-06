@@ -144,10 +144,10 @@ export default function LoginPage() {
       localStorage.setItem("userEmail", String(data?.userEmail || ""));
       localStorage.setItem("userType", String(data?.type || ""));
       localStorage.setItem("token", String(data?.token || ""));
-
-      if (data?.deviceToken) {
-        localStorage.setItem("deviceToken", String(data.deviceToken));
-      }
+      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax; Secure`;
+      document.cookie = `role=${role}; path=/; max-age=86400; SameSite=Lax; Secure`;
+      // ---
+      if (data?.deviceToken) localStorage.setItem("deviceToken", String(data.deviceToken));
 
       if (data?.redirectTo) {
         router.push(data.redirectTo);
