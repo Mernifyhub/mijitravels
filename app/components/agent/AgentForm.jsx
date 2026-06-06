@@ -11,7 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { apiClient } from "@/lib/apiClient";
+import { apiClient } from "@/lib/api";
 
 export default function AgentRegistration() {
   const [showPass, setShowPass] = useState(false);
