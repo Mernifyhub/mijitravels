@@ -62,7 +62,7 @@ export default function AgentRegistration() {
       formData.append("nidCopy", nidFile);
       formData.append("tradeLicense", licenseFile);
 
-      const res = await fetch("http://localhost:3001/api/v1/auth/register", {
+      const res = await fetch("https://api.mijitravels.com/api/v1/auth/register", {
   method: "POST",
   body: formData,
   cache: "no-store", // ⚠ Important
