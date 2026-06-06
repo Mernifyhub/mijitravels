@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
-import AppProvider from "./components/homepage/providers/AppProvider";
 
-const inter = Inter({ subsets: ["latin"] });
+import { Montserrat } from "next/font/google";
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "MIJI-TRAVELS -Best B2B Travel Portal",
-  description: "Book flights, hotels, umrah packages and more",
+  title: "MIJI",
+  description: "MIJI The best B2B Travel Portal",
 };
 
 export default function RootLayout({
@@ -16,10 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <AppProvider>{children}</AppProvider>
-      </body>
+    <html lang="en">
+      <body className={montserrat.className}>{children}</body>
     </html>
   );
 }
