@@ -316,7 +316,7 @@ export default function HeroSection() {
                         <div className="text-[11px]">
                           <span className="font-bold text-amber-900">Need Help? </span>
                           <span className="text-amber-700">
-                            <strong>+880 1XXX-XXXXXX</strong>
+                            <strong>+966 56 0899253</strong>
                           </span>
                         </div>
                       </div>
