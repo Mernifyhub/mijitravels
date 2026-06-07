@@ -60,15 +60,22 @@ export default function DestinationsSection() {
   const { t, formatPrice, container } = useApp();
 
   return (
-    <section id="destinations" className="py-20 bg-gradient-to-b from-white to-gray-50">
+    <section
+      id="destinations"
+      className="py-20 bg-gradient-to-b from-white to-gray-50"
+    >
       <div className={container}>
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
             <MapPin size={16} /> {t.destinations.badge}
           </div>
-          <h2 className="text-4xl font-bold text-[#0A2540]">{t.destinations.title}</h2>
-          <p className="text-gray-500 mt-3 max-w-xl mx-auto">{t.destinations.subtitle}</p>
+          <h2 className="text-4xl font-bold text-[#0A2540]">
+            {t.destinations.title}
+          </h2>
+          <p className="text-gray-500 mt-3 max-w-xl mx-auto">
+            {t.destinations.subtitle}
+          </p>
         </div>
 
         {/* Cards */}
@@ -86,7 +93,7 @@ export default function DestinationsSection() {
                   alt={city.city}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   onError={(e) => {
-                    e.target.src =
+                    (e.currentTarget as HTMLImageElement).src =
                       "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074";
                   }}
                 />

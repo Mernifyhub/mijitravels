@@ -1,13 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, ArrowRight, Plane, Headphones, X } from "lucide-react";
 import useApp from "./hooks/useApp";
 import { convertPrice } from "./lib/currencyRates";
 
-const BASE_OFFERS = [
+type BaseOffer = {
+  badge: string;
+  title: string;
+  image: string;
+  link: string;
+  highlight?: string;
+  highlightBDT?: number;
+  highlightText?: string;
+  desc?: string;
+  descBDT?: number;
+  descText?: string;
+};
+
+type FinalOffer = {
+  badge: string;
+  title: string;
+  highlight: string;
+  desc: string;
+  image: string;
+  link: string;
+};
+
+const BASE_OFFERS: BaseOffer[] = [
   {
     badge: "Trusted by 2 Million+",
     title: "Experience the World",
@@ -57,29 +79,38 @@ export default function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [showLoginCard, setShowLoginCard] = useState(true);
 
-  const convert = (bdt) => convertPrice(bdt, country);
+  const convert = (bdt: number) => convertPrice(bdt, country);
 
-  // Build offers with converted prices
-  const offers = BASE_OFFERS.map((offer) => {
-    let finalHighlight = offer.highlight;
-    if (offer.highlightBDT) {
-      finalHighlight = `${offer.highlightText} ${convert(offer.highlightBDT)}`;
-    }
+  const offers: FinalOffer[] = useMemo(() => {
+    return BASE_OFFERS.map((offer) => {
+      let finalHighlight = offer.highlight ?? "";
+      if (offer.highlightBDT && offer.highlightText) {
+        finalHighlight = `${offer.highlightText} ${convert(offer.highlightBDT)}`;
+      }
 
-    let finalDesc = offer.desc;
-    if (offer.descBDT) {
-      finalDesc = `${offer.descText} ${convert(offer.descBDT)}.`;
-    }
+      let finalDesc = offer.desc ?? "";
+      if (offer.descBDT && offer.descText) {
+        finalDesc = `${offer.descText} ${convert(offer.descBDT)}.`;
+      }
 
-    return { ...offer, highlight: finalHighlight, desc: finalDesc };
-  });
+      return {
+        badge: offer.badge,
+        title: offer.title,
+        highlight: finalHighlight,
+        desc: finalDesc,
+        image: offer.image,
+        link: offer.link,
+      };
+    });
+  }, [country]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev === offers.length - 1 ? 0 : prev + 1));
     }, 4000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [offers.length]);
 
   useEffect(() => {
     const isHidden = localStorage.getItem("hero_login_hidden");
@@ -95,8 +126,7 @@ export default function HeroSection() {
 
   return (
     <section className="relative w-full h-[450px] flex items-center bg-[#061229] overflow-hidden">
-
-      {/* ✅ Background Image — less blur, more visible */}
+      {/* Background Image */}
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -111,21 +141,19 @@ export default function HeroSection() {
             alt={slide.title}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.target.src = "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?q=80&w=2070";
+              (e.currentTarget as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1464037866556-6812c9d1c72e?q=80&w=2070";
             }}
           />
         </motion.div>
       </AnimatePresence>
 
-      {/* ✅ Lighter gradient — image more visible */}
+      {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#061229]/95 via-[#061229]/55 to-[#061229]/10" />
-
-      {/* ✅ Subtle bottom fade only */}
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#061229]/80 to-transparent" />
 
       <div className={container} style={{ position: "relative", zIndex: 10 }}>
         <div className="grid gap-6 items-center grid-cols-12">
-
           {/* SECTION 1: PROMOTION TEXT */}
           <div
             className={`${
@@ -173,7 +201,7 @@ export default function HeroSection() {
                   {slide.desc}
                 </p>
 
-                {/* ✅ Currency indicator */}
+                {/* Currency indicator */}
                 <div className="mt-3 inline-flex items-center gap-2">
                   <span className="bg-white/10 border border-white/15 backdrop-blur-sm rounded-full px-3 py-1 text-[10px] text-white/80 font-semibold">
                     Prices in {country.currency} ({country.symbol})
@@ -188,6 +216,7 @@ export default function HeroSection() {
                   >
                     {t.hero.checkOffers} <ArrowRight size={14} />
                   </Link>
+
                   <Link
                     href="#routes"
                     className="bg-white/10 border border-white/25 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-white/20 transition-all backdrop-blur-sm"
@@ -214,6 +243,7 @@ export default function HeroSection() {
                 />
               ))}
             </div>
+
             <div className="text-white/40 text-[10px] font-black tracking-widest uppercase lg:rotate-90 lg:mt-4 whitespace-nowrap">
               0{current + 1} / 0{offers.length}
             </div>
@@ -238,14 +268,19 @@ export default function HeroSection() {
                     <X size={14} className="group-hover:rotate-90 transition-transform" />
                   </button>
 
-                  {/* ✅ Glass effect card */}
                   <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/50">
                     <div className="text-center mb-4">
                       <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#0A2540] to-[#061229] rounded-xl mb-2">
-                        <Plane className="text-white" size={22} style={{ transform: "rotate(-45deg)" }} />
+                        <Plane
+                          className="text-white"
+                          size={22}
+                          style={{ transform: "rotate(-45deg)" }}
+                        />
                       </div>
                       <h3 className="text-xl font-bold text-[#0A2540]">Agent Portal</h3>
-                      <p className="text-xs text-gray-500 mt-1">Access your dashboard instantly</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Access your dashboard instantly
+                      </p>
                     </div>
 
                     <div className="space-y-2.5">
@@ -261,7 +296,9 @@ export default function HeroSection() {
                           <div className="w-full border-t border-gray-200" />
                         </div>
                         <div className="relative flex justify-center text-[10px]">
-                          <span className="bg-white px-2 text-gray-400 font-semibold">NEW HERE?</span>
+                          <span className="bg-white px-2 text-gray-400 font-semibold">
+                            NEW HERE?
+                          </span>
                         </div>
                       </div>
 
@@ -294,7 +331,7 @@ export default function HeroSection() {
           </AnimatePresence>
         </div>
 
-        {/* Floating Login (when card hidden) */}
+        {/* Floating Login */}
         {!showLoginCard && (
           <motion.button
             initial={{ opacity: 0, scale: 0 }}

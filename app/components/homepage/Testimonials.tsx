@@ -1,7 +1,7 @@
 "use client";
 
 import { BadgeCheck, Building2, MapPin, Quote } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import useApp from "./hooks/useApp";
 
 type Review = {
@@ -130,31 +130,37 @@ const reviews: Review[] = [
 
 export default function Testimonials() {
   const { t, container } = useApp();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   const pauseRef = useRef(false);
+
+  const doubledReviews = useMemo(() => [...reviews, ...reviews], []);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
 
-    let raf: number;
+    let frameId = 0;
     const speed = 0.5;
 
-    const step = () => {
-      if (!pauseRef.current && el) {
+    const animate = () => {
+      if (!pauseRef.current) {
         el.scrollLeft += speed;
-        if (el.scrollLeft >= el.scrollWidth / 2) {
-          el.scrollLeft = 0;
+
+        const halfWidth = el.scrollWidth / 2;
+        if (el.scrollLeft >= halfWidth) {
+          el.scrollLeft -= halfWidth;
         }
       }
-      raf = requestAnimationFrame(step);
+
+      frameId = window.requestAnimationFrame(animate);
     };
 
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    frameId = window.requestAnimationFrame(animate);
 
-  const doubled = [...reviews, ...reviews];
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#0A2540] via-[#0d2d5a] to-[#0A2540] py-12 sm:py-14">
@@ -165,50 +171,56 @@ export default function Testimonials() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-cyan-200 backdrop-blur">
               <BadgeCheck size={16} />
-              {t?.testimonials?.badge || "Agency Reviews"}
+              Agency Reviews
             </div>
 
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
-              {t?.testimonials?.title || "Trusted by agencies across the globe"}
+              {t.testimonials.title}
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-white/65 sm:text-base">
-              {t?.testimonials?.subtitle ||
-                "Partner agencies from Bangladesh, UAE, Saudi Arabia, Pakistan, and India share their experience."}
+              {t.testimonials.subtitle}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {["🇧🇩 BD", "🇦🇪 UAE", "🇸🇦 KSA", "🇵🇰 PK", "🇮🇳 IND"].map(
-              (tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80"
-                >
-                  {tag}
-                </span>
-              )
-            )}
+            {["🇧🇩 BD", "🇦🇪 UAE", "🇸🇦 KSA", "🇵🇰 PK", "🇮🇳 IND"].map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Scrollable reviews */}
       <div
         ref={scrollRef}
-        onMouseEnter={() => (pauseRef.current = true)}
-        onMouseLeave={() => (pauseRef.current = false)}
-        className="flex gap-4 overflow-x-auto scroll-smooth px-4 pb-2 scrollbar-hide sm:px-6 lg:px-8"
+        aria-label="Agency reviews"
+        onMouseEnter={() => {
+          pauseRef.current = true;
+        }}
+        onMouseLeave={() => {
+          pauseRef.current = false;
+        }}
+        onTouchStart={() => {
+          pauseRef.current = true;
+        }}
+        onTouchEnd={() => {
+          pauseRef.current = false;
+        }}
+        className="scrollbar-hide flex gap-4 overflow-x-auto scroll-smooth px-4 pb-2 sm:px-6 lg:px-8"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {doubled.map((item, i) => (
+        {doubledReviews.map((item, i) => (
           <article
-            key={i}
-            className="group relative flex-shrink-0 w-[320px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.06] p-5 backdrop-blur transition-all duration-300 hover:bg-white/[0.1]"
+            key={`${item.agency}-${i}`}
+            className="group relative w-[320px] flex-shrink-0 rounded-[24px] border border-white/10 bg-white/[0.06] p-5 backdrop-blur transition-all duration-300 hover:bg-white/[0.1] sm:w-[360px]"
           >
             <div className="absolute inset-x-0 top-0 h-1 rounded-t-[24px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-60" />
 
-            {/* Agency + Person */}
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <div
@@ -235,12 +247,10 @@ export default function Testimonials() {
               </div>
             </div>
 
-            {/* Review */}
             <p className="text-sm leading-6 text-white/80">
               &quot;{item.content}&quot;
             </p>
 
-            {/* Footer */}
             <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-white/70">
                 <MapPin size={11} />
@@ -256,7 +266,6 @@ export default function Testimonials() {
         ))}
       </div>
 
-      {/* Fade edges */}
       <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0A2540] to-transparent sm:w-24" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#0A2540] to-transparent sm:w-24" />
     </section>
