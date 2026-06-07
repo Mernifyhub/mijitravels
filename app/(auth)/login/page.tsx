@@ -1,39 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import {Eye,EyeOff,ShieldCheck,BarChart3,Globe,LogIn,RefreshCw,ArrowLeft,} from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  BarChart3,
+  Globe,
+  LogIn,
+  RefreshCw,
+  ArrowLeft,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";
 
-// ── Types ──
 type Step = "credentials" | "otp";
 
-type LoginResponse = {
-  success: boolean;
-  requireOtp?: boolean;
-  email?: string;
-  type?: string;
-  message?: string;
-};
-
-type VerifyOtpResponse = {
-  success: boolean;
-  Role: string;
-  type: string;
-  redirectTo?: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  token: string;
-};
-
-// ── Helper: extract error message ──
 const getErrorMessage = (err: unknown, fallback: string): string => {
   if (err instanceof Error) {
     const raw = err.message || "";
-
-    // try to extract clean message from "API Error 401 on /auth/login: {JSON}"
     const jsonStart = raw.indexOf("{");
     if (jsonStart !== -1) {
       try {
@@ -42,31 +28,59 @@ const getErrorMessage = (err: unknown, fallback: string): string => {
         if (parsed?.message) return parsed.message;
       } catch {}
     }
-
-    // clean prefix like "API Error 401 on /auth/login: Invalid password"
     const cleaned = raw
       .replace(/^API Error \d+ on [^:]+:\s*/i, "")
       .replace(/^Auth error on [^:]+:\s*/i, "")
       .replace(/^\d+ on [^:]+:\s*/i, "")
       .trim();
-
     if (cleaned) return cleaned;
   }
   return fallback;
 };
 
-// ── Helper: extract status code from error ──
-const getErrorStatus = (err: unknown): number | null => {
-  if (err instanceof Error) {
-    const match = err.message.match(/^API Error (\d+)/);
-    if (match) return parseInt(match[1]);
+// ═══════════════════════════════════════════════
+// ✅ HELPER: Save auth data + set cookies
+// ═══════════════════════════════════════════════
+const saveAuthData = (data: any): string => {
+  const role = String(data?.Role || "").toUpperCase();
 
-    // check if apiClient attached status
-    if ("status" in err && typeof (err as any).status === "number") {
-      return (err as any).status;
-    }
+  // ✅ LocalStorage
+  localStorage.setItem("role", role);
+  localStorage.setItem("userId", String(data?.userId || ""));
+  localStorage.setItem("userName", String(data?.userName || ""));
+  localStorage.setItem("userEmail", String(data?.userEmail || ""));
+  localStorage.setItem("userType", String(data?.type || ""));
+  localStorage.setItem("token", String(data?.token || ""));
+
+  // ✅ Cookies — Domain এ Secure flag সহ
+  document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax; Secure`;
+  document.cookie = `role=${role}; path=/; max-age=86400; SameSite=Lax; Secure`;
+
+  // ✅ Device token
+  if (data?.deviceToken) {
+    localStorage.setItem("deviceToken", String(data.deviceToken));
   }
-  return null;
+
+  return role;
+};
+
+// ═══════════════════════════════════════════════
+// ✅ HELPER: Get redirect path by role
+// ═══════════════════════════════════════════════
+const getRedirectPath = (role: string, serverRedirect?: string): string => {
+  if (serverRedirect) return serverRedirect;
+  switch (role) {
+    case "ADMIN":
+      return "/admin/dashboard";
+    case "MANAGER":
+      return "/manager/dashboard";
+    case "USER":
+    case "OPERATOR":
+    case "VIEWER":
+      return "/user/dashboard";
+    default:
+      return "";
+  }
 };
 
 export default function LoginPage() {
@@ -83,14 +97,12 @@ export default function LoginPage() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [rememberDevice, setRememberDevice] = useState(true);
 
-  // ── Handle Input ──
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setError("");
   };
 
-  // ── Cooldown Timer ──
   const startCooldown = (seconds = 120) => {
     setResendCooldown(seconds);
     const interval = setInterval(() => {
@@ -107,137 +119,131 @@ export default function LoginPage() {
   // ========================
   // STEP 1: Login
   // ========================
- const handleLogin = async () => {
-  if (!form.email.trim() || !form.password.trim()) {
-    setError("Email and password are required");
-    return;
-  }
+  const handleLogin = async () => {
+    if (!form.email.trim() || !form.password.trim()) {
+      setError("Email and password are required");
+      return;
+    }
 
-  try {
-    setLoading(true);
-    setError("");
-    setSuccessMsg("");
+    try {
+      setLoading(true);
+      setError("");
+      setSuccessMsg("");
 
-    const deviceToken =
-      typeof window !== "undefined"
-        ? localStorage.getItem("deviceToken") || undefined
-        : undefined;
+      const deviceToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("deviceToken") || undefined
+          : undefined;
 
-    const data = await apiClient("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: form.email.trim(),
-        password: form.password,
-        deviceToken,
-      }),
-      skipAuthRedirect: true,
-      skipAuthToken: true,
-    });
+      const data = await apiClient("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: form.email.trim(),
+          password: form.password,
+          deviceToken,
+        }),
+        skipAuthRedirect: true,
+        skipAuthToken: true,
+      });
 
-    // ✅ trusted device hole direct login
-    if (data?.token && !data?.requireOtp) {
-      const role = String(data?.Role || "").toUpperCase();
+      // ✅ Trusted device — direct login
+      if (data?.token && !data?.requireOtp) {
+        const role = saveAuthData(data);
+        const redirectPath = getRedirectPath(role, data?.redirectTo);
 
-      localStorage.setItem("role", role);
-      localStorage.setItem("userId", String(data?.userId || ""));
-      localStorage.setItem("userName", String(data?.userName || ""));
-      localStorage.setItem("userEmail", String(data?.userEmail || ""));
-      localStorage.setItem("userType", String(data?.type || ""));
-      localStorage.setItem("token", String(data?.token || ""));
-      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax; Secure`;
-      document.cookie = `role=${role}; path=/; max-age=86400; SameSite=Lax; Secure`;
-      // ---
-      if (data?.deviceToken) localStorage.setItem("deviceToken", String(data.deviceToken));
+        if (!redirectPath) {
+          setError("Unknown role. Please contact support.");
+          return;
+        }
 
-      if (data?.redirectTo) {
-        router.push(data.redirectTo);
+        // ✅ Full page reload so middleware sees cookies
+        window.location.href = redirectPath;
         return;
       }
 
-      if (role === "ADMIN") router.push("/admin/dashboard");
-      else if (role === "MANAGER") router.push("/manager/dashboard");
-      else if (["USER", "OPERATOR", "VIEWER"].includes(role))
-        router.push("/user/dashboard");
-      else setError("Unknown role. Please contact support.");
+      // ✅ OTP required
+      if (data?.requireOtp) {
+        setOtpEmail(data.email || form.email.trim());
+        setSuccessMsg(data.message || "OTP sent to your email");
+        setStep("otp");
+        startCooldown(120);
+      }
+    } catch (err) {
+      console.error("LOGIN ERROR:", err);
+      setError(getErrorMessage(err, "Login failed. Please try again."));
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // ════════════════════════════════════════════════════
+  // ✅ STEP 2: Verify OTP (FIXED — cookie + redirect)
+  // ════════════════════════════════════════════════════
+  const handleVerifyOtp = async () => {
+    if (!otp.trim() || otp.trim().length !== 6) {
+      setError("Please enter the 6-digit OTP");
       return;
     }
 
-    // ✅ normal OTP flow
-    if (data?.requireOtp) {
-      setOtpEmail(data.email || form.email.trim());
-      setSuccessMsg(data.message || "OTP sent to your email");
-      setStep("otp");
-      startCooldown(120);
+    try {
+      setLoading(true);
+      setError("");
+      setSuccessMsg("");
+
+      const data = await apiClient("/auth/verify-otp", {
+        method: "POST",
+        body: JSON.stringify({
+          email: otpEmail,
+          otp: otp.trim(),
+          rememberDevice,
+        }),
+        skipAuthRedirect: true,
+        skipAuthToken: true,
+      });
+
+      console.log("✅ VERIFY OTP RESPONSE:", data);
+
+      // ✅ Check token exists
+      if (!data?.token) {
+        console.error("❌ No token in response:", data);
+        setError("Verification failed — no token received.");
+        return;
+      }
+
+      // ═══════════════════════════════════════
+      // ✅ FIX: Save auth + cookies
+      // আপনার আগের code এ এটা MISSING ছিল!
+      // ═══════════════════════════════════════
+      const role = saveAuthData(data);
+
+      console.log("✅ Role:", role);
+      console.log("✅ Cookie check:", document.cookie);
+
+      const redirectPath = getRedirectPath(role, data?.redirectTo);
+
+      if (!redirectPath) {
+        setError("Unknown role. Please contact support.");
+        return;
+      }
+
+      // ═══════════════════════════════════════
+      // ✅ FIX: window.location.href
+      // router.push() তে middleware cookie
+      // পড়তে পারে না properly
+      // ═══════════════════════════════════════
+      console.log("✅ Redirecting to:", redirectPath);
+      window.location.href = redirectPath;
+
+    } catch (err) {
+      console.error("❌ OTP VERIFY ERROR:", err);
+      setError(
+        getErrorMessage(err, "OTP verification failed. Please try again.")
+      );
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    setError(getErrorMessage(err, "Login failed. Please try again."));
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-  // ========================
-  // STEP 2: Verify OTP
-  // ========================
-const handleVerifyOtp = async () => {
-  if (!otp.trim() || otp.trim().length !== 6) {
-    setError("Please enter the 6-digit OTP");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setError("");
-
-    const data = await apiClient("/auth/verify-otp", {
-      method: "POST",
-      body: JSON.stringify({
-        email: otpEmail,
-        otp: otp.trim(),
-        rememberDevice,
-      }),
-      skipAuthRedirect: true,
-      skipAuthToken: true,
-    });
-
-    console.log("VERIFY OTP RESPONSE:", data);
-
-    if (data?.deviceToken) {
-      localStorage.setItem("deviceToken", data.deviceToken);
-    }
-
-    console.log("Saved deviceToken:", localStorage.getItem("deviceToken"));
-
-    const role = String(data?.Role || "").toUpperCase();
-
-    localStorage.setItem("role", role);
-    localStorage.setItem("userId", String(data?.userId || ""));
-    localStorage.setItem("userName", String(data?.userName || ""));
-    localStorage.setItem("userEmail", String(data?.userEmail || ""));
-    localStorage.setItem("userType", String(data?.type || ""));
-    localStorage.setItem("token", String(data?.token || ""));
-
-    if (data?.redirectTo) {
-      router.push(data.redirectTo);
-      return;
-    }
-
-    if (role === "ADMIN") router.push("/admin/dashboard");
-    else if (role === "MANAGER") router.push("/manager/dashboard");
-    else if (["USER", "OPERATOR", "VIEWER"].includes(role)) {
-      router.push("/user/dashboard");
-    } else {
-      setError("Unknown role. Please contact support.");
-    }
-  } catch (err) {
-    console.error("OTP VERIFY ERROR:", err);
-    setError("OTP verification failed.");
-  } finally {
-    setLoading(false);
-  }
-};
   // ========================
   // RESEND OTP
   // ========================
@@ -257,9 +263,7 @@ const handleVerifyOtp = async () => {
       });
 
       setOtp("");
-      setSuccessMsg(
-        (data as any)?.message || "New OTP sent to your email"
-      );
+      setSuccessMsg((data as any)?.message || "New OTP sent to your email");
       startCooldown(120);
     } catch (err) {
       setError(getErrorMessage(err, "Failed to resend OTP."));
@@ -268,7 +272,6 @@ const handleVerifyOtp = async () => {
     }
   };
 
-  // ── Enter Key ──
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       if (step === "credentials") handleLogin();
@@ -277,7 +280,7 @@ const handleVerifyOtp = async () => {
   };
 
   // ========================
-  // UI — তোমার EXACT design
+  // UI
   // ========================
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f4f7fb]">
@@ -287,7 +290,7 @@ const handleVerifyOtp = async () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 border border-gray-200"
       >
-        {/* ── Left Branding (EXACT SAME) ── */}
+        {/* ── Left Branding ── */}
         <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-[#0B2545] via-[#13315C] to-[#1d4e89] text-white p-12 text-center relative overflow-hidden">
           <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/5 rounded-full blur-3xl" />
 
@@ -341,7 +344,6 @@ const handleVerifyOtp = async () => {
         {/* ── Right Form ── */}
         <div className="p-8 flex flex-col justify-center">
           <AnimatePresence mode="wait">
-            {/* ── STEP 1: Credentials ── */}
             {step === "credentials" && (
               <motion.div
                 key="credentials"
@@ -364,7 +366,6 @@ const handleVerifyOtp = async () => {
                   </div>
                 )}
 
-                {/* Email */}
                 <div className="relative mt-3">
                   <input
                     name="email"
@@ -379,7 +380,6 @@ const handleVerifyOtp = async () => {
                   </label>
                 </div>
 
-                {/* Password */}
                 <div className="relative mt-3">
                   <input
                     type={showPass ? "text" : "password"}
@@ -411,7 +411,6 @@ const handleVerifyOtp = async () => {
               </motion.div>
             )}
 
-            {/* ── STEP 2: OTP ── */}
             {step === "otp" && (
               <motion.div
                 key="otp"
@@ -445,7 +444,6 @@ const handleVerifyOtp = async () => {
                   </div>
                 )}
 
-                {/* OTP Input */}
                 <div className="relative">
                   <input
                     type="text"
@@ -462,6 +460,7 @@ const handleVerifyOtp = async () => {
                     autoFocus
                   />
                 </div>
+
                 <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
                   <input
                     type="checkbox"
