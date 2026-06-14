@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { apiClient } from "@/lib/api";
+import Footer from "../homepage/Footer";
 
 // ⏰ Big Clock with Seconds
 const BigClock = () => {
@@ -189,7 +190,7 @@ export default function AgentRegistration() {
                 </span>
               </div>
               <p className="text-[10px] text-blue-300/70 tracking-[0.3em] uppercase font-semibold mt-1">
-                B2B Enterprise Travel Platform
+                Enterprise B2B Portal Platform
               </p>
             </div>
           </div>
@@ -202,7 +203,7 @@ export default function AgentRegistration() {
                 <BigClock />
               </div>
               <p className="text-[10px] text-blue-300/70 tracking-[0.3em] uppercase font-semibold mt-1">
-                Current Time
+               Time and tide wait for none
               </p>
             </div>
           </div>
@@ -229,16 +230,15 @@ export default function AgentRegistration() {
                   <div className="p-3.5 bg-gradient-to-br from-blue-400/30 to-red-400/20 rounded-2xl shadow-2xl shadow-blue-500/40">
                     <UserPlus className="w-7 h-7 text-blue-200" />
                   </div>
-                  <Sparkles className="absolute -top-1 -right-1 w-3.5 h-3.5 text-red-300" />
                 </div>
                 <h2 className="text-4xl font-extrabold tracking-tight mb-1.5 bg-gradient-to-r from-white via-blue-100 to-red-200 bg-clip-text text-transparent">
-                  JOIN MIJI
+                 MIJI
                 </h2>
                 <div className="h-0.5 w-16 bg-gradient-to-r from-blue-400 via-red-400 to-blue-400 mx-auto rounded-full" />
               </div>
 
               <div className="z-10 max-w-xs">
-                <h3 className="text-lg font-semibold mb-2">Agent Registration 🚀</h3>
+                <h3 className="text-lg font-semibold mb-2">Agent Registration</h3>
                 <p className="text-blue-100/80 text-xs leading-relaxed mb-5">
                   Elevate your aviation business to the next level. Join our exclusive network of agents.
                 </p>
@@ -283,7 +283,7 @@ export default function AgentRegistration() {
               <div className="z-10 mt-4 flex items-center gap-1.5 text-blue-300/70">
                 <Globe className="w-3 h-3" />
                 <span className="text-[9px] tracking-widest uppercase">
-                  B2B Travel Solutions
+                  Enterprise B2B Portal Platform
                 </span>
               </div>
             </div>
@@ -564,161 +564,12 @@ export default function AgentRegistration() {
         </motion.div>
       </div>
 
-      {/* ═══════════ DETAILED PREMIUM FOOTER ═══════════ */}
-      <footer className="relative z-10 mt-10">
-        <div className="h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
-
-        <div className="bg-gradient-to-b from-slate-950/80 via-slate-950/90 to-black/95 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-6 py-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-              
-              {/* Column 1: Brand */}
-              <div className="lg:col-span-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="relative">
-                    <div className="p-2 bg-gradient-to-br from-blue-500/30 to-red-500/20 rounded-lg shadow-lg shadow-blue-500/30">
-                      <Plane className="w-4 h-4 text-blue-300" />
-                    </div>
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full shadow-md shadow-red-500/50">
-                      <div className="w-full h-full bg-red-400 rounded-full animate-ping opacity-75" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-base font-bold bg-gradient-to-r from-white via-blue-200 to-red-300 bg-clip-text text-transparent">
-                        MIJI PORTAL
-                      </span>
-                      <span className="px-1.5 py-0.5 bg-gradient-to-r from-blue-500/20 to-red-500/20 rounded text-[8px] font-bold text-blue-200 uppercase tracking-wider shadow-sm">
-                        v2.0
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-white/50 text-xs leading-relaxed mb-4">
-                  The complete B2B travel management platform powering thousands
-                  of agencies worldwide with cutting-edge technology.
-                </p>
-                <div className="flex gap-2">
-                  {[
-                    { Icon: Facebook, color: "hover:text-blue-400", href: "#" },
-                    { Icon: Twitter, color: "hover:text-sky-400", href: "#" },
-                    { Icon: Instagram, color: "hover:text-pink-400", href: "#" },
-                    { Icon: Linkedin, color: "hover:text-blue-500", href: "#" },
-                  ].map(({ Icon, color, href }, i) => (
-                    <a
-                      key={i}
-                      href={href}
-                      className={`p-2 bg-white/5 hover:bg-white/10 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-white/60 ${color} hover:-translate-y-0.5`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              {/* Column 2: Quick Links */}
-              <div>
-                <h4 className="text-white font-bold mb-4 text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-                  <div className="w-1 h-3 bg-gradient-to-b from-blue-400 to-red-400 rounded-full" />
-                  Quick Links
-                </h4>
-                <ul className="space-y-2.5 text-xs">
-                  {["About Us", "Our Services", "Pricing Plans", "Contact Us", "Careers"].map((link) => (
-                    <li key={link}>
-                      <a href="#" className="text-white/50 hover:text-blue-300 transition flex items-center gap-2 group">
-                        <span className="w-1 h-1 bg-red-400 rounded-full opacity-0 group-hover:opacity-100 transition" />
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Column 3: Services */}
-              <div>
-                <h4 className="text-white font-bold mb-4 text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-                  <div className="w-1 h-3 bg-gradient-to-b from-blue-400 to-red-400 rounded-full" />
-                  Services
-                </h4>
-                <ul className="space-y-2.5 text-xs">
-                  {[
-                    { icon: Plane, label: "Flight Booking" },
-                    { icon: CreditCard, label: "Payment Gateway" },
-                    { icon: Users, label: "B2B Solutions" },
-                    { icon: Headphones, label: "24/7 Support" },
-                    { icon: BarChart3, label: "Analytics Dashboard" },
-                  ].map(({ icon: Icon, label }) => (
-                    <li key={label}>
-                      <a href="#" className="text-white/50 hover:text-blue-300 transition flex items-center gap-2 group">
-                        <Icon className="w-3 h-3 text-blue-400/70 group-hover:text-blue-400" />
-                        {label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Column 4: Contact */}
-              <div>
-                <h4 className="text-white font-bold mb-4 text-xs uppercase tracking-[0.2em] flex items-center gap-2">
-                  <div className="w-1 h-3 bg-gradient-to-b from-blue-400 to-red-400 rounded-full" />
-                  Get in Touch
-                </h4>
-                <ul className="space-y-3 text-xs text-white/50">
-                  <li className="flex items-start gap-2">
-                    <div className="p-1.5 bg-blue-500/10 rounded-md mt-0.5 shadow-sm">
-                      <Mail className="w-3 h-3 text-blue-300" />
-                    </div>
-                    <div>
-                      <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Email</p>
-                      <a href="mailto:support@mijitravels.com" className="hover:text-blue-300 transition">
-                        support@mijitravels.com
-                      </a>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="p-1.5 bg-red-500/10 rounded-md mt-0.5 shadow-sm">
-                      <PhoneIcon className="w-3 h-3 text-red-300" />
-                    </div>
-                    <div>
-                      <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Phone</p>
-                      <a href="tel:+8801234567890" className="hover:text-red-300 transition">
-                        +880 1234-567890
-                      </a>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="p-1.5 bg-indigo-500/10 rounded-md mt-0.5 shadow-sm">
-                      <MapPin className="w-3 h-3 text-indigo-300" />
-                    </div>
-                    <div>
-                      <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Address</p>
-                      <span>Dhaka, Bangladesh</span>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Bottom Strip */}
-            <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-white/40">
-                <span>© 2026 MIJI Portal. All rights reserved.</span>
-                <span className="hidden md:inline text-white/20">•</span>
-                <a href="#" className="hover:text-blue-300 transition">Privacy Policy</a>
-                <span className="hidden md:inline text-white/20">•</span>
-                <a href="#" className="hover:text-blue-300 transition">Terms of Service</a>
-                <span className="hidden md:inline text-white/20">•</span>
-                <a href="#" className="hover:text-blue-300 transition">Cookie Policy</a>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-white/40">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                <span>Trusted by 500+ aviation agencies worldwide</span>
-              </div>
-            </div>
+       {/* ═══════════ DETAILED PREMIUM FOOTER ═══════════ */}
+            <footer className="relative z-10 mt-50">
+              <div className="h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+              <Footer/>
+            </footer>
           </div>
-        </div>
-      </footer>
-    </div>
+    
   );
 }
