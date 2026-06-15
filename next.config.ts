@@ -10,6 +10,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'pics.avs.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'mijitravels.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.mijitravels.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.mijitravels.com',
+      },
     ],
   },
 
@@ -33,11 +45,6 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value:
-              "default-src 'self'; img-src 'self' https: data:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' https: data:; connect-src 'self' https://mijitravels.com https://api.mijitravels.com;",
           },
         ],
       },
