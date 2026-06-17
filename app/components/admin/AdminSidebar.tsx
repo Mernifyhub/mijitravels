@@ -25,6 +25,7 @@ import {
   X,
   PanelLeftClose,
   PanelLeftOpen,
+  Cog,
 } from "lucide-react";
 
 type Role = "ADMIN" | "MANAGER" | "USER" | "OPERATOR" | "VIEWER";
@@ -78,6 +79,10 @@ export default function Sidebar() {
       { icon: <Percent size={20} />, label: "Markup", roles: ["ADMIN"], children: [
         { name: "Flight Markup", route: `${baseRoute}/markup` },
         { name: "Discounts", route: `${baseRoute}/discounts` },
+      ]},
+      { icon: <Cog size={20} />, label: "API Management", roles: ["ADMIN"], children: [
+        { name: "Providers", route: `${baseRoute}/api-management/providers` },
+        { name: "Endpoints", route: `${baseRoute}/api-management/endpoints` },
       ]},
       { icon: <TicketsPlane size={20} />, label: "All Booking", roles: ["ADMIN", "MANAGER"], children: [
         { name: "All Booking", route: `${baseRoute}/bookings/all-bookings` },

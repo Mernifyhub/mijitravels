@@ -1,3 +1,5 @@
+// lib/api.ts
+
 const API_BASE = "https://api.mijitravels.com/api/v1";
 
 const forceLogout = (reason = "Session expired") => {
@@ -33,7 +35,6 @@ export const apiClient = async (
     ...fetchOptions
   } = options;
 
-  // Get token only if not skipped
   const token =
     !skipAuthToken && typeof window !== "undefined"
       ? localStorage.getItem("token") ||
@@ -41,14 +42,12 @@ export const apiClient = async (
         ""
       : "";
 
-  // Normalize endpoint
   const normalizedEndpoint = endpoint.startsWith("/")
     ? endpoint
     : `/${endpoint}`;
 
   const isFormData = fetchOptions.body instanceof FormData;
 
-  // Build headers properly
   const headers: HeadersInit = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -66,7 +65,6 @@ export const apiClient = async (
       cache: "no-store",
     });
   } catch (networkError: any) {
-    // Network error (no internet, server down, CORS, etc.)
     const error = new Error(
       networkError?.message || "Network error. Please check your connection."
     ) as Error & { status?: number; data?: any };
@@ -75,7 +73,6 @@ export const apiClient = async (
     throw error;
   }
 
-  // Success response
   if (res.ok) {
     try {
       return await res.json();
@@ -84,7 +81,6 @@ export const apiClient = async (
     }
   }
 
-  // Error response handling
   let errorData: any = null;
 
   try {
@@ -104,12 +100,10 @@ export const apiClient = async (
       ? errorData.message[0]
       : errorData?.message || `API Error ${res.status}`;
 
-  // Handle 401 - Unauthorized
   if (res.status === 401 && !skipAuthRedirect) {
     forceLogout("Session expired");
   }
 
-  // Handle token-related errors
   if (!skipAuthRedirect) {
     const lower = String(message).toLowerCase();
     if (
@@ -131,3 +125,47 @@ export const apiClient = async (
 };
 
 export { forceLogout };
+
+// ============================================================
+// ✅ API PROVIDER MANAGEMENT
+// Admin dashboard থেকে provider on/off করার জন্য
+// ============================================================
+
+export type ApiProvider = {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiProvidersResponse = {
+  success: boolean;
+  data: ApiProvider[];
+};
+
+export type ApiProviderToggleResponse = {
+  success: boolean;
+  message: string;
+  data: ApiProvider;
+};
+
+// ── সব provider list আনো ──
+// GET /api/v1/admin/api-providers
+export const getApiProviders = async (): Promise<ApiProvidersResponse> => {
+  return apiClient("/admin/api-providers");
+};
+
+// ── একটা provider on/off করো ──
+// PATCH /api/v1/admin/api-providers/:slug/toggle
+export const toggleApiProvider = async (
+  slug: string,
+  isActive: boolean
+): Promise<ApiProviderToggleResponse> => {
+  return apiClient(`/admin/api-providers/${slug}/toggle`, {
+    method: "PATCH",
+    body: JSON.stringify({ isActive }),
+  });
+};
