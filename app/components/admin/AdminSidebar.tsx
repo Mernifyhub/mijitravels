@@ -82,7 +82,6 @@ export default function Sidebar() {
       ]},
       { icon: <Cog size={20} />, label: "API Management", roles: ["ADMIN"], children: [
         { name: "Providers", route: `${baseRoute}/api-management` },
-        { name: "Endpoints", route: `#` },
       ]},
       { icon: <TicketsPlane size={20} />, label: "All Booking", roles: ["ADMIN", "MANAGER"], children: [
         { name: "All Booking", route: `${baseRoute}/bookings/all-bookings` },
