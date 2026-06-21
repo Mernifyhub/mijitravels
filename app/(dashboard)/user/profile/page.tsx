@@ -18,10 +18,27 @@ const BACKEND_URL =
 
 const getSafePath = (filePath: string): string => {
   if (!filePath) return "";
-  if (filePath.startsWith("http")) return filePath;
-  const normalized = filePath.replace(/\\/g, "/");
-  if (/^[A-Z]:\//.test(normalized)) return "";
-  if (normalized.startsWith("/")) return `${BACKEND_URL}${normalized}`;
+
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    return filePath;
+  }
+
+  // Windows backslash → forward slash
+  let normalized = filePath.replace(/\\/g, "/");
+
+  // Windows drive letter remove
+  normalized = normalized.replace(/^[A-Za-z]:\//, "");
+
+  // "uploads/" থেকে শুরু কর
+  const uploadsIndex = normalized.indexOf("uploads/");
+  if (uploadsIndex !== -1) {
+    return `${BACKEND_URL}/${normalized.slice(uploadsIndex)}`;
+  }
+
+  if (normalized.startsWith("/")) {
+    return `${BACKEND_URL}${normalized}`;
+  }
+
   return `${BACKEND_URL}/${normalized}`;
 };
 
@@ -287,13 +304,14 @@ export default function UserProfilePage() {
 
     try {
       const uploadData = new FormData();
-      uploadData.append("file", file);
       uploadData.append("type", type);
+      uploadData.append("file", file);
+      
 
-      const data = await apiClient("/auth/profile/upload-document", {
-        method: "POST",
-        body: uploadData,
-      });
+      const data = await apiClient(`/auth/profile/upload-document/${type}`, {
+  method: "POST",
+  body: uploadData,
+});
 
       if (data?.success === false) {
         showError(data.message || "Failed to upload file");
