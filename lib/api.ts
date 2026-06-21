@@ -1,7 +1,6 @@
 // lib/api.ts
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.mijitravels.com/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://api.mijitravels.com/api/v1";
 
 const forceLogout = (reason = "Session expired") => {
   if (typeof window === "undefined") return;
