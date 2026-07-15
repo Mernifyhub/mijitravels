@@ -419,7 +419,7 @@ export function FlightCard({flight,isExpanded,setExpanded,isFirst,sortBy,searchP
   isRefundable={!!cond.refundable}
   isChangeable={!!cond.changeable}
   handleBookNow={handleBookNow}
-  paxWisePricing={convertedPaxWisePricing ?? undefined}  {/* ✅ Fix এখানে */}
+  paxWisePricing={convertedPaxWisePricing ?? undefined}
   adults={adults}
   children={children}
   infants={infants}
