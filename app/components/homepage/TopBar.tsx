@@ -39,7 +39,7 @@ export default function TopBar() {
   const { country, lang, t, setCountry, setCurrency, setLang, container } = useApp();
 
   return (
-    <div className="bg-[#0A2540] text-white py-3 text-xs border-b border-white/10 relative z-[70]">
+    <div className="bg-[#0A2540] text-white py-2 text-xs border-b border-white/10 relative z-[70]">
       <div className={container}>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4 sm:gap-6 flex-wrap">

@@ -1,35 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Eye,
-  EyeOff,
-  ShieldCheck,
-  BarChart3,
-  Globe,
-  LogIn,
-  RefreshCw,
-  ArrowLeft,
-  Plane,
-  Lock,
-  Mail,
-  Sparkles,
-  Zap,
-  TrendingUp,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Send,
-  Award,
-  Users,
-  Headphones,
-  CreditCard,
-  Clock,
-  CheckCircle2,
-} from "lucide-react";
+import {Eye,EyeOff,ShieldCheck,BarChart3,Globe,LogIn,RefreshCw,ArrowLeft,Lock,Mail,Zap,} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api";

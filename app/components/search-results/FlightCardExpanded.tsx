@@ -17,6 +17,23 @@ import { ExpandedFareBreakdown } from "./ExpandedFareBreakdown";
 import { ExpandedBaggagePolicies } from "./ExpandedBaggagePolicies";
 import { ExpandedCabinFeatures } from "./ExpandedCabinFeatures";
 
+// ✅ Pax fare types
+interface PaxFareInfo {
+  travelerType: string;
+  baseFare: number;
+  taxAmount: number;
+  totalFare: number;
+  count: number;
+  subtotal: number;
+  currency: string;
+}
+
+interface PaxWisePricing {
+  adult?: PaxFareInfo | null;
+  child?: PaxFareInfo | null;
+  infant?: PaxFareInfo | null;
+}
+
 interface Props {
   isExpanded: boolean;
   flight: FlightData;
@@ -24,6 +41,7 @@ interface Props {
   airlineName: string;
   cabinClass: string;
   availableSeats: number;
+
   // Fare
   currency: string;
   baseFare: number;
@@ -33,6 +51,7 @@ interface Props {
   promoDiscount: number;
   discountLabels: string[];
   youPay: number;
+
   // Baggage & Conditions
   baggageChecked: string;
   baggageCabin: string;
@@ -42,8 +61,15 @@ interface Props {
   changeLabel: string;
   isRefundable: boolean;
   isChangeable: boolean;
+
   // Actions
   handleBookNow: () => void;
+
+  // ✅ NEW: Pax-wise pricing & counts
+  paxWisePricing?: PaxWisePricing;
+  adults?: number;
+  children?: number;
+  infants?: number;
 }
 
 export function FlightCardExpanded({
@@ -70,6 +96,12 @@ export function FlightCardExpanded({
   isRefundable,
   isChangeable,
   handleBookNow,
+
+  // ✅ NEW props
+  paxWisePricing,
+  adults = 0,
+  children = 0,
+  infants = 0,
 }: Props) {
   const itineraries = flight.itineraries || [];
   const currentSourceCfg =
@@ -86,7 +118,6 @@ export function FlightCardExpanded({
           className="overflow-hidden"
         >
           <div className="border-t border-slate-100">
-
             {/* Header */}
             <div className="bg-gradient-to-r from-[#0A1128] via-[#1a2342] to-[#0A1128] px-5 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -120,7 +151,6 @@ export function FlightCardExpanded({
             {/* Body */}
             <div className="p-5 bg-gradient-to-b from-slate-50/30 to-white">
               <div className="grid lg:grid-cols-2 gap-6">
-
                 {/* LEFT */}
                 <div className="space-y-5">
                   <ExpandedRouteTimeline itineraries={itineraries} />
@@ -148,7 +178,14 @@ export function FlightCardExpanded({
                     promoDiscount={promoDiscount}
                     discountLabels={discountLabels}
                     youPay={youPay}
+
+                    // ✅ NEW: Pass pax-wise pricing
+                    paxWisePricing={paxWisePricing}
+                    adults={adults}
+                    children={children}
+                    infants={infants}
                   />
+
                   <ExpandedBaggagePolicies
                     baggageChecked={baggageChecked}
                     baggageCabin={baggageCabin}

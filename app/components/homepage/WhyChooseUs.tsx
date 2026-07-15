@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BadgeCheck,
   Headphones,
   PlaneTakeoff,
   ShieldCheck,
@@ -17,26 +16,26 @@ type Feature = {
 const fallbackFeatures: Feature[] = [
   {
     title: "Transparent Pricing",
-    desc: "Clear fare details without confusion.",
+    desc: "Clear fare details with no hidden charges or surprises.",
   },
   {
-    title: "Responsive Support",
-    desc: "Quick help before and after booking.",
+    title: "24/7 Support",
+    desc: "Professional assistance whenever you need travel help.",
   },
   {
-    title: "Secure Handling",
-    desc: "Safe and dependable booking process.",
+    title: "Secure Booking",
+    desc: "Protected payments and trusted booking experience.",
   },
   {
-    title: "Smooth Booking",
-    desc: "Simple, organized, and professional.",
+    title: "Fast Processing",
+    desc: "Quick confirmation with smooth travel arrangements.",
   },
 ];
 
 const icons = [Wallet, Headphones, ShieldCheck, PlaneTakeoff];
 
 export default function WhyChooseUs() {
-  const { country, t, container } = useApp();
+  const { t, container } = useApp();
 
   const features: Feature[] =
     Array.isArray(t?.whyUs?.features) && t.whyUs.features.length
@@ -44,60 +43,64 @@ export default function WhyChooseUs() {
       : fallbackFeatures;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-[#f8fbff] to-[#eff6ff] pt-0 pb-10 sm:pt-1 sm:pb-12">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.05),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(147,197,253,0.16),transparent_30%)]" />
+    <section className="relative overflow-hidden bg-[#f7fbff] py-4">
+      {/* Background Blur */}
+      <div className="absolute -left-28 top-16 h-80 w-80 rounded-full bg-blue-200/30 blur-[120px]" />
+      <div className="absolute -right-28 bottom-10 h-80 w-80 rounded-full bg-cyan-200/30 blur-[120px]" />
 
       <div className={`${container} relative`}>
-        <div className="rounded-[28px] border border-blue-100 bg-white/80 p-3 shadow-[0_12px_40px_rgba(37,99,235,0.08)] backdrop-blur-xl sm:p-4">
-          <div className="grid gap-3 lg:grid-cols-12">
-            <div className="lg:col-span-4 rounded-[24px] border border-blue-100 bg-gradient-to-br from-[#eff6ff] via-[#dbeafe] to-[#bfdbfe] p-5 text-[#0A2540]">
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/70 px-3 py-1.5 text-xs font-semibold text-blue-700">
-                <BadgeCheck size={14} />
-                {t?.whyUs?.badge || "Why Choose Us"}
-              </div>
+        <div className="rounded-[36px] bg-white/70 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.07)] backdrop-blur-xl md:p-10 lg:p-12">
+          {/* Header */}
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900 md:text-5xl">
+              Why Professionals Choose Miji
+            </h2>
+          </div>
 
-              <h2 className="mt-4 text-xl font-bold leading-tight sm:text-2xl">
-                {t?.whyUs?.title || "Smart travel support, built for trust"}
-              </h2>
-
-              <p className="mt-2 text-sm leading-6 text-[#33506f]">
-                Reliable booking help for travelers in {country?.name || "your region"}.
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {["Clear Fares", "Fast Support", "Secure Process"].map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-[11px] font-medium text-blue-700"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-
+          {/* Cards */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((item, i) => {
               const Icon = icons[i % icons.length];
 
               return (
                 <div
                   key={i}
-                  className="lg:col-span-2 rounded-[24px] border border-blue-100 bg-[#f8fbff] p-4 text-[#0A2540] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_24px_rgba(37,99,235,0.10)]"
+                  className="group rounded-[28px] bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(37,99,235,0.12)]"
                 >
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
-                    <Icon size={18} />
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-[0_10px_25px_rgba(37,99,235,0.25)] transition-all duration-300 group-hover:scale-105">
+                    <Icon size={26} />
                   </div>
 
-                  <h3 className="text-sm font-semibold leading-5 sm:text-[15px]">
+                  <h3 className="text-lg font-bold text-slate-900">
                     {item.title}
                   </h3>
 
-                  <p className="mt-2 text-xs leading-5 text-slate-600 sm:text-sm">
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
                     {item.desc}
                   </p>
                 </div>
               );
             })}
+          </div>
+
+          {/* Trust Bar */}
+          <div className="mt-10 rounded-[28px] bg-gradient-to-r from-blue-50 via-white to-cyan-50 p-6 shadow-[0_12px_35px_rgba(15,23,42,0.05)] md:p-7">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h4 className="text-xl font-bold text-slate-900">
+                  Trusted By Thousands Of Travelers
+                </h4>
+
+                <p className="mt-2 text-sm leading-7 text-slate-600">
+                  Delivering reliable travel experiences with secure payments
+                  and dedicated support.
+                </p>
+              </div>
+
+              <div className="inline-flex rounded-full bg-green-100 px-5 py-2 text-sm font-bold text-green-700 shadow-sm">
+                ⭐ Excellent Rated
+              </div>
+            </div>
           </div>
         </div>
       </div>

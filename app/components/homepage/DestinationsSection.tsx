@@ -62,7 +62,7 @@ export default function DestinationsSection() {
   return (
     <section
       id="destinations"
-      className="py-20 bg-gradient-to-b from-white to-gray-50"
+      className="py-4 bg-gradient-to-b from-white to-gray-50"
     >
       <div className={container}>
         {/* Header */}

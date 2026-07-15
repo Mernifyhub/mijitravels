@@ -1,22 +1,9 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AgentTopBar from "@/app/components/agent/AgentTopBar";
-import {
-  GroupFareTab,
-  HeroSection,
-  MultiCityForm,
-  OneWayRoundTripForm,
-  PnrImportTab,
-  SearchTabs,
-  TripTypeSelector,
-} from "@/app/components/agent/search";
-import type {
-  ActiveTab,
-  MultiCitySegment,
-  TripType,
-} from "@/app/components/agent/search/types";
+import {GroupFareTab, HeroSection,MultiCityForm,OneWayRoundTripForm,PnrImportTab,SearchTabs,TripTypeSelector,} from "@/app/components/agent/search";
+import type {ActiveTab,MultiCitySegment,TripType,} from "@/app/components/agent/search/types";
 
 export default function FlightSearchPage() {
   const router = useRouter();

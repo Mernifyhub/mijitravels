@@ -10,8 +10,8 @@ export function getTypeConfig(type: string) {
     bg: string; text: string; icon: React.ReactNode; iconColor: string;
   }> = {
     TICKET: { bg: "bg-emerald-50", text: "text-emerald-700", icon: <Plane size={12} />, iconColor: "text-emerald-600" },
+    TICKET_REQUESTED: { bg: "bg-yellow-50", text: "text-yellow-700", icon: <Plane size={12} />, iconColor: "text-yellow-600" },
     BOOKING: { bg: "bg-emerald-50", text: "text-emerald-700", icon: <Plane size={12} />, iconColor: "text-emerald-600" },
-    ON_HOLD: { bg: "bg-amber-50", text: "text-amber-700", icon: <Clock size={12} />, iconColor: "text-amber-600" },
     DEPOSIT: { bg: "bg-sky-50", text: "text-sky-700", icon: <Wallet size={12} />, iconColor: "text-sky-600" },
     REFUNDED: { bg: "bg-amber-50", text: "text-amber-700", icon: <RotateCcw size={12} />, iconColor: "text-amber-600" },
     REFUND: { bg: "bg-amber-50", text: "text-amber-700", icon: <RotateCcw size={12} />, iconColor: "text-amber-600" },

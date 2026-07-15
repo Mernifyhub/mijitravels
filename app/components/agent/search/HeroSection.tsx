@@ -7,7 +7,7 @@ export default function HeroSection() {
     <div className="relative bg-gradient-to-r from-[#021f3b] via-[#0a3a6b] to-[#021f3b] pt-2 pb-16 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-6 -left-6 opacity-5">
-          <Plane size={180} className="text-white rotate-12" />
+          
         </div>
         <div className="absolute top-8 right-16 opacity-5 animate-pulse">
           <Plane size={90} className="text-white -rotate-12" />
@@ -37,7 +37,7 @@ export default function HeroSection() {
                   id="grad"
                   x1="0"
                   y1="0"
-                  x2="300"
+                  x2="100"
                   y2="0"
                   gradientUnits="userSpaceOnUse"
                 >

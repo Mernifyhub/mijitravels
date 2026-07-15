@@ -30,7 +30,7 @@ export default function Navbar() {
   return (
     <nav
       className={`sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b transition-all duration-500 ${
-        isScrolled ? "shadow-xl py-2" : "py-3"
+        isScrolled ? "shadow-xl py-2" : "py-2"
       }`}
     >
       <div className={container}>

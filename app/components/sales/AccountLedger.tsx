@@ -84,6 +84,11 @@ function getTypeConfig(type: string) {
       icon: <Clock size={12} />, iconColor: "text-amber-600",
       label: "On Hold",
     },
+    TICKET_REQUESTED: {
+      bg: "bg-yellow-50", text: "text-yellow-700",
+      icon: <Plane size={12} />, iconColor: "text-yellow-600",
+      label: "Ticket Requested",
+    },
     DEPOSIT: {
       bg: "bg-sky-50", text: "text-sky-700",
       icon: <Wallet size={12} />, iconColor: "text-sky-600",

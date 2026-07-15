@@ -1,4 +1,3 @@
-// app/user/booking/page.tsx
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
@@ -19,11 +18,9 @@ import BookingNavbar      from "@/app/components/agent/flight/BookingNavbar";
 import InsufficientBanner from "@/app/components/agent/flight/InsufficientBanner";
 import PassengerCard      from "@/app/components/agent/flight/PassengerCard";
 import FlightSummary      from "@/app/components/agent/flight/FlightSummary";
-import SuccessScreen      from "@/app/components/agent/flight/SuccessScreen";
 
-// ── Inner component (needs useSearchParams) ──
 function BookingPageInner() {
-  const router = useRouter();
+  const router       = useRouter();
   const searchParams = useSearchParams();
 
   // ── URL Params ──
@@ -80,15 +77,55 @@ function BookingPageInner() {
   const [expandedIdx,      setExpandedIdx]      = useState(0);
   const [isSubmitting,     setIsSubmitting]     = useState(false);
   const [error,            setError]            = useState("");
-  const [success,          setSuccess]          = useState(false);
-  const [pnr,              setPnr]              = useState("");
   const [userBalance,      setUserBalance]      = useState<UserBalance | null>(null);
   const [balanceLoading,   setBalanceLoading]   = useState(true);
   const [showDepositModal, setShowDepositModal] = useState(false);
 
+  // flightOffer state
+  const [flightOffer,  setFlightOffer]  = useState<any | null>(null);
+  const [offerLoading, setOfferLoading] = useState(true);
+
   const totalAvailable       = userBalance?.totalAvailable ?? 0;
   const hasSufficientBalance = totalAvailable >= bookingTotal;
   const shortfall            = Math.max(0, bookingTotal - totalAvailable);
+
+  // ── Load flightOffer from sessionStorage ──
+  useEffect(() => {
+    try {
+      setOfferLoading(true);
+
+      const byFlightId =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem(`flight-offer-${flightId}`)
+          : null;
+
+      const fallback =
+        typeof window !== "undefined"
+          ? sessionStorage.getItem("selectedFlightOffer")
+          : null;
+
+      const raw = byFlightId || fallback;
+
+      if (!raw) {
+        setError("Selected flight offer not found. Please search again.");
+        setFlightOffer(null);
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      setFlightOffer(parsed);
+
+      // ✅ Debug log — check if paxWisePricing exists
+      console.log("📊 Pax-wise Pricing:", parsed?.paxWisePricing);
+      console.log("👥 Passenger Fares:", parsed?.passengerFares);
+    } catch (err) {
+      console.error("Failed to load flightOffer:", err);
+      setError("Selected flight data is invalid. Please search again.");
+      setFlightOffer(null);
+    } finally {
+      setOfferLoading(false);
+    }
+  }, [flightId]);
 
   // ── Fetch balance ──
   useEffect(() => {
@@ -123,7 +160,7 @@ function BookingPageInner() {
       }
     };
     fetchBalance();
-  }, []);
+  }, [currency]);
 
   // ── Update passenger field ──
   const updatePassenger = (
@@ -134,7 +171,6 @@ function BookingPageInner() {
     setPassengers((prev) => {
       const updated = [...prev];
       updated[idx] = { ...updated[idx], [field]: value };
-      // Auto-set title based on gender for adults
       if (field === "gender" && updated[idx].type === "ADULT") {
         updated[idx].title = value === "MALE" ? "MR" : "MRS";
       }
@@ -162,6 +198,11 @@ function BookingPageInner() {
   const handleConfirm = async () => {
     setError("");
 
+    if (!flightOffer) {
+      setError("Selected flight offer not found. Please search again.");
+      return;
+    }
+
     if (!hasSufficientBalance) {
       setShowDepositModal(true);
       return;
@@ -174,19 +215,53 @@ function BookingPageInner() {
       const data = await apiClient("/bookings/create", {
         method: "POST",
         body: JSON.stringify({
-          flightId, carrier, flightNo,
-          origin, destination, departure, arrival, tripType,
-          netFare:  bookingTotal,
-          baseFare: customerInvoiceTotal,
+          flightOffer,
+          passengers,
+          contact: {
+            email:              passengers[0]?.email || "",
+            phone:              passengers[0]?.phone || "",
+            countryCallingCode: "880",
+          },
+          tripType,
+          cabinClass,
+          checkedBag,
+          cabinBag,
+          checkedBagRaw,
+          cabinBagRaw,
+          refundable,
+          changeable,
+          refundPenalty,
+          changePenalty,
+
+          flightId,
+          carrier,
+          flightNo,
+          origin,
+          destination,
+          departure,
+          arrival,
           currency,
           segments,
-          passengers,
-          checkedBag, cabinBag, checkedBagRaw, cabinBagRaw,
-          refundable, changeable, refundPenalty, changePenalty, cabinClass,
+          netFare:  bookingTotal,
+          baseFare: customerInvoiceTotal,
         }),
       });
-      setPnr(data.pnr);
-      setSuccess(true);
+
+      // ✅ cleanup sessionStorage
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(`flight-offer-${flightId}`);
+        sessionStorage.removeItem("selectedFlightOffer");
+      }
+
+      // ✅ Direct redirect to booking details page
+      if (data?.id) {
+        router.push(`/user/bookings/${data.id}`);
+        return;
+      }
+
+      // Fallback: যদি id না থাকে, all bookings এ যাও
+      router.push('/user/bookings/all-bookings');
+
     } catch (err: any) {
       if (
         String(err?.message).includes("INSUFFICIENT") ||
@@ -196,23 +271,16 @@ function BookingPageInner() {
         return;
       }
       setError(err?.message || "Something went wrong. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ── Success Screen ──
-  if (success) {
+  // ✅ Offer loading screen
+  if (offerLoading) {
     return (
-      <SuccessScreen
-        pnr={pnr}
-        origin={origin}
-        destination={destination}
-        departure={departure}
-        passengers={passengers}
-        bookingTotal={bookingTotal}
-        currency={currency}
-      />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-blue-600" />
+      </div>
     );
   }
 
@@ -220,7 +288,6 @@ function BookingPageInner() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 pb-20">
 
-      {/* Deposit Modal */}
       <DepositModal
         show={showDepositModal}
         onClose={() => setShowDepositModal(false)}
@@ -230,7 +297,6 @@ function BookingPageInner() {
         currency={currency}
       />
 
-      {/* Navbar */}
       <BookingNavbar
         origin={origin}
         destination={destination}
@@ -244,7 +310,6 @@ function BookingPageInner() {
 
       <div className="max-w-6xl mx-auto px-4 py-6">
 
-        {/* Insufficient Balance Banner */}
         {!balanceLoading && !hasSufficientBalance && (
           <InsufficientBanner
             userBalance={userBalance}
@@ -314,7 +379,10 @@ function BookingPageInner() {
               <div className="space-y-3">
                 <button
                   onClick={() => setShowDepositModal(true)}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-4 rounded-2xl font-semibold text-sm transition-all shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600
+                    text-white py-4 rounded-2xl font-semibold text-sm transition-all
+                    shadow-lg shadow-emerald-200/50 hover:shadow-xl hover:-translate-y-0.5
+                    active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                   <Wallet size={16} />
                   Deposit Now — {fmtMoney(shortfall, currency)} Needed
@@ -327,13 +395,18 @@ function BookingPageInner() {
             ) : (
               <button
                 onClick={handleConfirm}
-                disabled={isSubmitting || balanceLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-semibold text-sm transition-all shadow-lg shadow-blue-200/50 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center gap-2"
+                disabled={isSubmitting || balanceLoading || offerLoading || !flightOffer}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600
+                  hover:from-blue-500 hover:to-indigo-500
+                  disabled:opacity-60 disabled:cursor-not-allowed
+                  text-white py-4 rounded-2xl font-semibold text-sm transition-all
+                  shadow-lg shadow-blue-200/50 hover:shadow-xl hover:-translate-y-0.5
+                  active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
-                  <><Loader2 size={16} className="animate-spin" /> Processing...</>
-                ) : balanceLoading ? (
-                  <><Loader2 size={16} className="animate-spin" /> Checking Balance...</>
+                  <><Loader2 size={16} className="animate-spin" /> Creating Booking...</>
+                ) : balanceLoading || offerLoading ? (
+                  <><Loader2 size={16} className="animate-spin" /> Loading Flight...</>
                 ) : (
                   <><Shield size={15} /> Confirm Booking <ArrowRight size={14} /></>
                 )}
@@ -369,6 +442,9 @@ function BookingPageInner() {
               balanceLoading={balanceLoading}
               checkedBag={checkedBag}
               refundable={refundable}
+
+              // ✅ NEW: Pass pax-wise pricing from flightOffer
+              paxWisePricing={flightOffer?.paxWisePricing}
             />
           </div>
         </div>
@@ -377,7 +453,6 @@ function BookingPageInner() {
   );
 }
 
-// useSearchParams-এর জন্য Suspense wrap করতে হবে
 export default function BookingPage() {
   return (
     <Suspense fallback={

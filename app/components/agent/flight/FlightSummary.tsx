@@ -8,6 +8,23 @@ import BalanceSection from "./BalanceSection";
 import PriceBreakdown from "./PriceBreakdown";
 import PolicySection from "./PolicySection";
 
+// ✅ NEW: Pax fare types
+interface PaxFareInfo {
+  travelerType: string;
+  baseFare: number;
+  taxAmount: number;
+  totalFare: number;
+  count: number;
+  subtotal: number;
+  currency: string;
+}
+
+interface PaxWisePricing {
+  adult?: PaxFareInfo | null;
+  child?: PaxFareInfo | null;
+  infant?: PaxFareInfo | null;
+}
+
 interface FlightSummaryProps {
   origin: string;
   destination: string;
@@ -34,20 +51,41 @@ interface FlightSummaryProps {
   balanceLoading: boolean;
   checkedBag: string;
   refundable: string;
+
+  // ✅ NEW: Pax-wise pricing (optional)
+  paxWisePricing?: PaxWisePricing;
 }
 
 export default function FlightSummary({
-  origin, destination, departure, tripType,
-  segments, adults, children, infants,
-  currency, baseFare, taxAmount, totalBaseTax,
-  customerInvoiceTotal, promoDiscount, grandTotal,
-  totalPax, perPerson, bookingTotal, shortfall,
-  hasSufficientBalance, totalAvailable, userBalance,
-  balanceLoading, checkedBag, refundable,
+  origin,
+  destination,
+  departure,
+  tripType,
+  segments,
+  adults,
+  children,
+  infants,
+  currency,
+  baseFare,
+  taxAmount,
+  totalBaseTax,
+  customerInvoiceTotal,
+  promoDiscount,
+  grandTotal,
+  totalPax,
+  perPerson,
+  bookingTotal,
+  shortfall,
+  hasSufficientBalance,
+  totalAvailable,
+  userBalance,
+  balanceLoading,
+  checkedBag,
+  refundable,
+  paxWisePricing, // ✅ NEW
 }: FlightSummaryProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden sticky top-20">
-
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0B1D35] via-[#15294A] to-[#0B1D35] px-5 py-4">
         <p className="text-[11px] font-semibold text-blue-300 uppercase tracking-wide mb-1">
@@ -59,14 +97,20 @@ export default function FlightSummary({
           <span className="text-xl font-bold text-white">{destination}</span>
         </div>
         <p className="text-xs text-blue-300 mt-1">
-          {formatDate(departure)} · {tripType === "ROUND_TRIP" ? "Round Trip" : "One Way"}
+          {formatDate(departure)} ·{" "}
+          {tripType === "ROUND_TRIP" ? "Round Trip" : "One Way"}
         </p>
       </div>
 
       {/* Segments */}
       <div className="p-4 space-y-3">
         {segments.map((seg, i) => (
-          <div key={i} className={i !== 0 ? "pt-3 border-t border-dashed border-slate-100" : ""}>
+          <div
+            key={i}
+            className={
+              i !== 0 ? "pt-3 border-t border-dashed border-slate-100" : ""
+            }
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center overflow-hidden">
@@ -74,7 +118,9 @@ export default function FlightSummary({
                     src={`https://pics.avs.io/80/80/${seg.airline}.png`}
                     alt={seg.airline}
                     className="w-5 h-5 object-contain"
-                    onError={(e) => { e.currentTarget.src = ""; }}
+                    onError={(e) => {
+                      e.currentTarget.src = "";
+                    }}
                   />
                 </div>
                 <p className="text-xs font-semibold text-slate-700">
@@ -87,9 +133,13 @@ export default function FlightSummary({
             </div>
             <div className="flex items-center gap-2">
               <div className="text-left">
-                <p className="text-base font-bold text-slate-800">{formatTime(seg.departure)}</p>
+                <p className="text-base font-bold text-slate-800">
+                  {formatTime(seg.departure)}
+                </p>
                 <p className="text-xs font-semibold text-blue-600">{seg.from}</p>
-                <p className="text-[10px] text-slate-400">{formatDate(seg.departure)}</p>
+                <p className="text-[10px] text-slate-400">
+                  {formatDate(seg.departure)}
+                </p>
               </div>
               <div className="flex-1 flex items-center gap-1">
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-slate-200 to-blue-200" />
@@ -97,9 +147,13 @@ export default function FlightSummary({
                 <div className="h-[1px] flex-1 bg-slate-200" />
               </div>
               <div className="text-right">
-                <p className="text-base font-bold text-slate-800">{formatTime(seg.arrival)}</p>
+                <p className="text-base font-bold text-slate-800">
+                  {formatTime(seg.arrival)}
+                </p>
                 <p className="text-xs font-semibold text-blue-600">{seg.to}</p>
-                <p className="text-[10px] text-slate-400">{formatDate(seg.arrival)}</p>
+                <p className="text-[10px] text-slate-400">
+                  {formatDate(seg.arrival)}
+                </p>
               </div>
             </div>
           </div>
@@ -122,13 +176,17 @@ export default function FlightSummary({
             {children > 0 && (
               <div className="flex justify-between">
                 <span className="text-xs text-slate-600">Children</span>
-                <span className="text-xs font-bold text-slate-800">×{children}</span>
+                <span className="text-xs font-bold text-slate-800">
+                  ×{children}
+                </span>
               </div>
             )}
             {infants > 0 && (
               <div className="flex justify-between">
                 <span className="text-xs text-slate-600">Infants</span>
-                <span className="text-xs font-bold text-slate-800">×{infants}</span>
+                <span className="text-xs font-bold text-slate-800">
+                  ×{infants}
+                </span>
               </div>
             )}
           </div>
@@ -160,6 +218,9 @@ export default function FlightSummary({
         totalPax={totalPax}
         perPerson={perPerson}
         currency={currency}
+
+        // ✅ NEW: Pass pax-wise pricing
+        paxWisePricing={paxWisePricing}
       />
 
       {/* Policies */}

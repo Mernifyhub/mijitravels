@@ -2,8 +2,25 @@
 
 "use client";
 
-import { User, Users, ArrowRight, ChevronDown } from "lucide-react";
+import { User, Users, Baby, ArrowRight, ChevronDown } from "lucide-react";
 import { formatMoney, SOURCE_CONFIG, type ApiSourceKey } from "./helpers";
+
+// ✅ Pax fare types
+interface PaxFareInfo {
+  travelerType: string;
+  baseFare: number;
+  taxAmount: number;
+  totalFare: number;
+  count: number;
+  subtotal: number;
+  currency: string;
+}
+
+interface PaxWisePricing {
+  adult?: PaxFareInfo | null;
+  child?: PaxFareInfo | null;
+  infant?: PaxFareInfo | null;
+}
 
 interface FlightCardPriceProps {
   currency: string;
@@ -16,7 +33,13 @@ interface FlightCardPriceProps {
   isExpanded: boolean;
   setExpanded: () => void;
   handleBookNow: () => void;
-  isRoundTrip?: boolean; // ✅ NEW PROP
+  isRoundTrip?: boolean;
+
+  // ✅ NEW: Pax-wise pricing & counts
+  paxWisePricing?: PaxWisePricing;
+  adults?: number;
+  children?: number;
+  infants?: number;
 }
 
 export function FlightCardPrice({
@@ -30,15 +53,25 @@ export function FlightCardPrice({
   isExpanded,
   setExpanded,
   handleBookNow,
-  isRoundTrip = false, // ✅ default false
+  isRoundTrip = false,
+  paxWisePricing,
+  adults = 0,
+  children = 0,
+  infants = 0,
 }: FlightCardPriceProps) {
   const currentSourceCfg =
     SOURCE_CONFIG[apiSource] || SOURCE_CONFIG.duffel;
 
+  // ✅ Check if we have pax-wise data + multiple pax types
+  const hasMultiplePaxTypes =
+    paxWisePricing &&
+    [paxWisePricing.adult, paxWisePricing.child, paxWisePricing.infant].filter(
+      Boolean,
+    ).length > 1;
+
   // ✅ Dynamic sizing based on trip type
   const sizes = isRoundTrip
     ? {
-        // ROUND TRIP - bigger (current design)
         wrapper: "lg:w-60 px-5 py-4",
         spacing: "space-y-2",
         badgeGap: "gap-1.5 mb-2",
@@ -55,9 +88,10 @@ export function FlightCardPrice({
         detailsBtnPy: "py-2",
         detailsBtnText: "text-[11px]",
         iconSize: 11,
+        paxRowText: "text-[10px]",
+        paxRowIcon: 9,
       }
     : {
-        // ONE WAY - smaller, compact
         wrapper: "lg:w-52 px-4 py-3",
         spacing: "space-y-1.5",
         badgeGap: "gap-1 mb-1.5",
@@ -74,20 +108,36 @@ export function FlightCardPrice({
         detailsBtnPy: "py-1.5",
         detailsBtnText: "text-[10px]",
         iconSize: 10,
+        paxRowText: "text-[9px]",
+        paxRowIcon: 8,
       };
 
   return (
-    <div className={`${sizes.wrapper} lg:self-start border-t lg:border-t-0 bg-gradient-to-b from-slate-50/50 to-white`}>
+    <div
+      className={`${sizes.wrapper} lg:self-start border-t lg:border-t-0 bg-gradient-to-b from-slate-50/50 to-white`}
+    >
       <div className={sizes.spacing}>
         {/* Pax + API + Tax badges */}
-        <div className={`flex items-center justify-end ${sizes.badgeGap} flex-wrap sm:flex-nowrap`}>
-          <div className={`${sizes.badgeHeight} ${sizes.badgePx} rounded-full border border-indigo-100 bg-indigo-50/90 shadow-sm flex items-center gap-1.5 whitespace-nowrap`}>
+        <div
+          className={`flex items-center justify-end ${sizes.badgeGap} flex-wrap sm:flex-nowrap`}
+        >
+          <div
+            className={`${sizes.badgeHeight} ${sizes.badgePx} rounded-full border border-indigo-100 bg-indigo-50/90 shadow-sm flex items-center gap-1.5 whitespace-nowrap`}
+          >
             {totalPax === 1 ? (
-              <User size={sizes.iconSize} className="text-indigo-600 stroke-[2.6px]" />
+              <User
+                size={sizes.iconSize}
+                className="text-indigo-600 stroke-[2.6px]"
+              />
             ) : (
-              <Users size={sizes.iconSize} className="text-indigo-600 stroke-[2.6px]" />
+              <Users
+                size={sizes.iconSize}
+                className="text-indigo-600 stroke-[2.6px]"
+              />
             )}
-            <span className={`${sizes.badgeText} font-black text-indigo-800 leading-none`}>
+            <span
+              className={`${sizes.badgeText} font-black text-indigo-800 leading-none`}
+            >
               {totalPax} {totalPax === 1 ? "Traveler" : "Travelers"}
             </span>
           </div>
@@ -101,8 +151,12 @@ export function FlightCardPrice({
             </span>
           </div>
 
-          <div className={`${sizes.badgeHeight} ${sizes.badgePx} rounded-full border border-emerald-100 bg-emerald-50 shadow-sm flex items-center whitespace-nowrap`}>
-            <span className={`${sizes.badgeText} font-black text-emerald-700 uppercase tracking-tight leading-none`}>
+          <div
+            className={`${sizes.badgeHeight} ${sizes.badgePx} rounded-full border border-emerald-100 bg-emerald-50 shadow-sm flex items-center whitespace-nowrap`}
+          >
+            <span
+              className={`${sizes.badgeText} font-black text-emerald-700 uppercase tracking-tight leading-none`}
+            >
               Tax Incl.
             </span>
           </div>
@@ -110,17 +164,23 @@ export function FlightCardPrice({
 
         {/* Price */}
         <div className="text-center">
-          <p className={`${sizes.currencyText} font-bold text-slate-400 uppercase mb-0.5`}>
+          <p
+            className={`${sizes.currencyText} font-bold text-slate-400 uppercase mb-0.5`}
+          >
             {currency}
           </p>
 
           {totalDiscount > 0 && (
-            <p className={`${sizes.oldPriceText} font-bold text-slate-400 line-through mb-0.5`}>
+            <p
+              className={`${sizes.oldPriceText} font-bold text-slate-400 line-through mb-0.5`}
+            >
               {subtotal.toLocaleString()}
             </p>
           )}
 
-          <p className={`${sizes.priceText} font-extrabold leading-none text-slate-900`}>
+          <p
+            className={`${sizes.priceText} font-extrabold leading-none text-slate-900`}
+          >
             {youPay.toLocaleString()}
           </p>
 
@@ -130,12 +190,63 @@ export function FlightCardPrice({
             </p>
           )}
 
-          {totalPax > 1 && (
+          {totalPax > 1 && !hasMultiplePaxTypes && (
             <p className={`${sizes.perPersonText} text-slate-400 mt-0.5`}>
               {formatMoney(perPerson, currency)} / person
             </p>
           )}
         </div>
+
+        {/* ✅ NEW: Pax-wise mini breakdown (only when multiple pax types) */}
+        {hasMultiplePaxTypes && (
+          <div className="bg-slate-50/80 rounded-lg border border-slate-100 px-2 py-1.5 space-y-0.5">
+            {paxWisePricing?.adult && adults > 0 && (
+              <PaxMiniRow
+                icon={
+                  <User
+                    size={sizes.paxRowIcon}
+                    className="text-indigo-500 stroke-[2.5px]"
+                  />
+                }
+                label="Adult"
+                count={adults}
+                perPax={paxWisePricing.adult.totalFare}
+                currency={currency}
+                textSize={sizes.paxRowText}
+              />
+            )}
+            {paxWisePricing?.child && children > 0 && (
+              <PaxMiniRow
+                icon={
+                  <Users
+                    size={sizes.paxRowIcon}
+                    className="text-amber-500 stroke-[2.5px]"
+                  />
+                }
+                label="Child"
+                count={children}
+                perPax={paxWisePricing.child.totalFare}
+                currency={currency}
+                textSize={sizes.paxRowText}
+              />
+            )}
+            {paxWisePricing?.infant && infants > 0 && (
+              <PaxMiniRow
+                icon={
+                  <Baby
+                    size={sizes.paxRowIcon}
+                    className="text-pink-500 stroke-[2.5px]"
+                  />
+                }
+                label="Infant"
+                count={infants}
+                perPax={paxWisePricing.infant.totalFare}
+                currency={currency}
+                textSize={sizes.paxRowText}
+              />
+            )}
+          </div>
+        )}
 
         {/* Book Now */}
         <button
@@ -160,6 +271,39 @@ export function FlightCardPrice({
           />
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────
+// ✅ NEW Helper: Pax Mini Row
+// ─────────────────────────────────────
+function PaxMiniRow({
+  icon,
+  label,
+  count,
+  perPax,
+  currency,
+  textSize,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+  perPax: number;
+  currency: string;
+  textSize: string;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1">
+        {icon}
+        <span className={`${textSize} font-bold text-slate-600`}>
+          {label} × {count}
+        </span>
+      </div>
+      <span className={`${textSize} font-black text-slate-700`}>
+        {formatMoney(perPax, currency)}
+      </span>
     </div>
   );
 }
