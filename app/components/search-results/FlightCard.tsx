@@ -396,34 +396,35 @@ export function FlightCard({flight,isExpanded,setExpanded,isFirst,sortBy,searchP
 
       {/* EXPANDED */}
       <FlightCardExpanded
-        isExpanded={isExpanded}
-        flight={flight}
-        apiSource={apiSource}
-        airlineName={airlineName}
-        cabinClass={cabinClass}
-        availableSeats={availableSeats}
-        currency={currency}
-        baseFare={totalBaseFare}
-        taxAmount={taxAmount}
-        extraFee={extraFee}
-        subtotal={subtotal}
-        promoDiscount={promoDiscount}
-        discountLabels={discountLabels}
-        youPay={youPay}
-        baggageChecked={baggageInfo.checked}
-        baggageCabin={baggageInfo.cabin}
-        baggageCheckedRaw={baggageInfo.checkedRaw}
-        baggageCabinRaw={baggageInfo.cabinRaw}
-        refundLabel={refundLabel}
-        changeLabel={changeLabel}
-        isRefundable={!!cond.refundable}
-        isChangeable={!!cond.changeable}
-        handleBookNow={handleBookNow}
-        paxWisePricing={convertedPaxWisePricing}
-        adults={adults}
-        children={children}
-        infants={infants}
-      />
+  isExpanded={isExpanded}
+  flight={flight}
+  apiSource={apiSource}
+  airlineName={airlineName}
+  cabinClass={cabinClass}
+  availableSeats={availableSeats}
+  currency={currency}
+  baseFare={totalBaseFare}
+  taxAmount={taxAmount}
+  extraFee={extraFee}
+  subtotal={subtotal}
+  promoDiscount={promoDiscount}
+  discountLabels={discountLabels}
+  youPay={youPay}
+  baggageChecked={baggageInfo.checked}
+  baggageCabin={baggageInfo.cabin}
+  baggageCheckedRaw={baggageInfo.checkedRaw}
+  baggageCabinRaw={baggageInfo.cabinRaw}
+  refundLabel={refundLabel}
+  changeLabel={changeLabel}
+  isRefundable={!!cond.refundable}
+  isChangeable={!!cond.changeable}
+  handleBookNow={handleBookNow}
+  paxWisePricing={convertedPaxWisePricing ?? undefined}  {/* ✅ Fix এখানে */}
+  adults={adults}
+  children={children}
+  infants={infants}
+/>
+
     </motion.div>
   );
 }
