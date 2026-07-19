@@ -6,7 +6,15 @@ import { Shield, Globe, ChevronDown } from "lucide-react";
 import useApp from "./hooks/useApp";
 import { COUNTRIES, LANGUAGES } from "./lib/constants";
 
-function Dropdown({ trigger, children }: { trigger: ReactNode; children: ReactNode }) {
+function Dropdown({
+  trigger,
+  children,
+  className = "",
+}: {
+  trigger: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -19,15 +27,15 @@ function Dropdown({ trigger, children }: { trigger: ReactNode; children: ReactNo
   }, []);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className={`relative ${className}`} ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 hover:bg-white/10 px-4 py-2 rounded-xl transition text-sm font-medium"
+        className="flex items-center gap-2 hover:bg-white/10 px-2.5 sm:px-4 py-2 rounded-xl transition text-[13px] sm:text-sm font-medium whitespace-nowrap"
       >
         {trigger}
       </button>
       {open && (
-        <div className="absolute top-full mt-2 bg-white text-gray-800 rounded-2xl shadow-2xl border border-gray-100 z-[70] min-w-[220px] overflow-hidden">
+        <div className="absolute left-0 top-full mt-2 bg-white text-gray-800 rounded-2xl shadow-2xl border border-gray-100 z-[70] min-w-[180px] sm:min-w-[220px] max-w-[calc(100vw-1rem)] overflow-hidden">
           {children}
         </div>
       )}
@@ -39,12 +47,13 @@ export default function TopBar() {
   const { country, lang, t, setCountry, setCurrency, setLang, container } = useApp();
 
   return (
-    <div className="bg-[#0A2540] text-white py-2 text-xs border-b border-white/10 relative z-[70]">
+    <div className="bg-[#0A2540] text-white py-2 text-[13px] sm:text-xs border-b border-white/10 relative z-[70]">
       <div className={container}>
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
+        <div className="flex justify-between items-center gap-2 sm:gap-2 flex-nowrap">
+          {/* LEFT SIDE */}
+          <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 flex-nowrap min-w-0">
 
-            {/* Country — changes country + currency + language */}
+            {/* Country */}
             <Dropdown
               trigger={
                 <span className="flex items-center gap-2">
@@ -69,8 +78,9 @@ export default function TopBar() {
               ))}
             </Dropdown>
 
-            {/* Currency — changes only currency, language stays */}
+            {/* Currency — HIDDEN on mobile */}
             <Dropdown
+              className="hidden sm:block"
               trigger={
                 <span className="flex items-center gap-2">
                   <span className="font-bold">{country.currency}</span>
@@ -94,11 +104,11 @@ export default function TopBar() {
               ))}
             </Dropdown>
 
-            {/* Language — changes only language */}
+            {/* Language */}
             <Dropdown
               trigger={
                 <span className="flex items-center gap-2">
-                  <Globe size={16} />
+                  <Globe size={15} />
                   <span>{lang.label}</span>
                   <ChevronDown size={14} />
                 </span>
@@ -118,16 +128,26 @@ export default function TopBar() {
             </Dropdown>
           </div>
 
-          <div className="flex items-center gap-5 text-sm">
-            <Link href="#" className="flex items-center gap-1 hover:text-white/80 transition">
-              <Shield size={15} className="text-green-400" /> {t.topbar.iata}
+          {/* RIGHT SIDE */}
+          <div className="flex items-center gap-3 sm:gap-5 text-[13px] sm:text-sm flex-nowrap">
+            <Link
+              href="#"
+              className="flex items-center gap-1.5 hover:text-white/80 transition whitespace-nowrap"
+            >
+              <Shield size={15} className="text-green-400" />
+              <span>{t.topbar.iata}</span>
             </Link>
-            <Link href="/login" className="hover:text-white/80 transition">
+
+            <Link
+              href="/login"
+              className="hover:text-white/80 transition whitespace-nowrap"
+            >
               {t.topbar.login}
             </Link>
+
             <Link
               href="/register"
-              className="bg-[#E31E24] hover:bg-red-700 px-5 py-2 rounded-xl font-semibold transition"
+              className="bg-[#E31E24] hover:bg-red-700 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-semibold transition whitespace-nowrap"
             >
               {t.topbar.join}
             </Link>

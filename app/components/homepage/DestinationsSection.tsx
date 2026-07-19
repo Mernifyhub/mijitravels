@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, ArrowRight, Plane } from "lucide-react";
+import {
+  MapPin,
+  ArrowRight,
+  Plane,
+  TrendingUp,
+  Sparkles,
+} from "lucide-react";
 import useApp from "./hooks/useApp";
 
-// All prices in BDT (base currency)
 const cities = [
   {
     city: "Jeddah",
@@ -12,7 +17,9 @@ const cities = [
     country: "Saudi Arabia",
     price: 32000,
     direct: true,
-    image: "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?q=80&w=2070",
+    trending: true,
+    image:
+      "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?q=80&w=2070",
   },
   {
     city: "Dubai",
@@ -20,7 +27,9 @@ const cities = [
     country: "UAE",
     price: 25000,
     direct: false,
-    image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070",
+    trending: true,
+    image:
+      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070",
   },
   {
     city: "Riyadh",
@@ -28,7 +37,9 @@ const cities = [
     country: "Saudi Arabia",
     price: 39000,
     direct: true,
-    image: "https://images.unsplash.com/photo-1578895101408-1a36b834405b?q=80&w=2070",
+    trending: false,
+    image:
+      "https://images.unsplash.com/photo-1578895101408-1a36b834405b?q=80&w=2070",
   },
   {
     city: "London",
@@ -36,7 +47,9 @@ const cities = [
     country: "UK",
     price: 85000,
     direct: false,
-    image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070",
+    trending: true,
+    image:
+      "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=2070",
   },
   {
     city: "Singapore",
@@ -44,7 +57,9 @@ const cities = [
     country: "Singapore",
     price: 57000,
     direct: false,
-    image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=2070",
+    trending: false,
+    image:
+      "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=2070",
   },
   {
     city: "Istanbul",
@@ -52,7 +67,9 @@ const cities = [
     country: "Turkey",
     price: 57000,
     direct: false,
-    image: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=2070",
+    trending: false,
+    image:
+      "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=2070",
   },
 ];
 
@@ -62,95 +79,139 @@ export default function DestinationsSection() {
   return (
     <section
       id="destinations"
-      className="py-4 bg-gradient-to-b from-white to-gray-50"
+      className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/40 to-white py-4 sm:py-6"
     >
-      <div className={container}>
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
-            <MapPin size={16} /> {t.destinations.badge}
+      {/* Decorative Background */}
+      <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-blue-300/20 blur-[120px] sm:h-96 sm:w-96" />
+      <div className="pointer-events-none absolute -right-32 bottom-20 h-72 w-72 rounded-full bg-cyan-300/20 blur-[120px] sm:h-96 sm:w-96" />
+
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#0A2540 1px, transparent 1px), linear-gradient(90deg, #0A2540 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div className={`${container} relative`}>
+        {/* Header — compact */}
+        <div className="mx-auto mb-2 max-w-3xl text-center sm:mb-5">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm">
+            <Sparkles size={13} className="text-amber-500" />
+            {t.destinations.badge}
           </div>
-          <h2 className="text-4xl font-bold text-[#0A2540]">
-            {t.destinations.title}
+
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
+            Explore{" "}
+            <span className="bg-black from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
+              Top Destinations
+            </span>
           </h2>
-          <p className="text-gray-500 mt-3 max-w-xl mx-auto">
-            {t.destinations.subtitle}
-          </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-5 xl:grid-cols-6 xl:gap-4">
           {cities.map((city, i) => (
             <Link
               key={i}
               href="/login"
-              className="group block bg-white rounded-[26px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-[0_18px_60px_rgba(2,6,23,0.12)] hover:-translate-y-2 transition-all duration-500"
+              className="group relative block overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)] transition-all duration-500 hover:-translate-y-2 hover:border-transparent hover:shadow-[0_25px_60px_rgba(15,23,42,0.15)]"
             >
               {/* Image */}
-              <div className="relative h-52 overflow-hidden">
+              <div className="relative h-48 overflow-hidden sm:h-52 xl:h-40">
                 <img
                   src={city.image}
                   alt={city.city}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074";
-                  }}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
-                {/* Code */}
-                <div className="absolute top-3 left-3">
-                  <span className="bg-white/95 backdrop-blur text-[#0A2540] text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg">
+                {/* Top-left: Code only */}
+                <div className="absolute left-3 top-3">
+                  <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black text-[#0A2540] shadow-lg backdrop-blur">
                     {city.code}
                   </span>
                 </div>
 
-                {/* Direct badge */}
-                {city.direct && (
-                  <div className="absolute top-3 right-3">
-                    <span className="bg-green-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg">
-                      {t.destinations.direct}
+                {/* Top-right: ONE badge only (HOT or Direct, priority: HOT) */}
+                <div className="absolute right-3 top-3">
+                  {city.trending ? (
+                    <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg">
+                      <TrendingUp size={10} />
+                      HOT
+                    </span>
+                  ) : city.direct ? (
+                    <span className="flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-bold text-white shadow-lg">
+                      <Plane size={10} />
+                      Direct
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* Bottom Text */}
+                <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <p className="text-xl font-black leading-tight drop-shadow-lg sm:text-2xl xl:text-lg">
+                    {city.city}
+                  </p>
+                  <p className="mt-0.5 flex items-center gap-1 text-[11px] text-white/90">
+                    <MapPin size={11} />
+                    {city.country}
+                  </p>
+                </div>
+              </div>
+
+              {/* Content — Clean & Balanced */}
+              <div className="p-4">
+                {/* Price row */}
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {t.destinations.from}
+                  </p>
+                  <p className="mt-0.5 text-xl font-black text-[#0A2540] xl:text-lg">
+                    {formatPrice(city.price)}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    per person • one-way
+                  </p>
+                </div>
+
+                {/* Divider */}
+                <div className="my-3 h-px bg-slate-100" />
+
+                {/* Bottom: Route + Arrow */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                    <Plane size={12} className="text-[#E31E24]" />
+                    <span className="font-semibold">
+                      DAC → {city.code}
                     </span>
                   </div>
-                )}
 
-                {/* Bottom overlay content */}
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <p className="text-xl font-bold leading-tight">{city.city}</p>
-                  <p className="text-xs text-white/80 mt-1">{city.country}</p>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0A2540] text-white shadow-md transition-colors duration-300 group-hover:bg-[#E31E24]">
+                    <ArrowRight size={14} />
+                  </div>
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold">
-                      {t.destinations.from}
-                    </p>
-                    <p className="text-2xl font-black text-[#0A2540] mt-1">
-                      {formatPrice(city.price)}
-                    </p>
-                  </div>
-
-                  <div className="w-11 h-11 rounded-2xl bg-[#0A2540] text-white flex items-center justify-center shadow-md group-hover:bg-[#E31E24] group-hover:scale-110 transition-all duration-300">
-                    <ArrowRight size={18} />
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center gap-1.5">
-                    <Plane size={13} className="text-[#E31E24]" />
-                    <span>{city.code}</span>
-                  </div>
-                  <span className="font-semibold text-[#0A2540] group-hover:text-[#E31E24] transition">
-                    View Fare
-                  </span>
-                </div>
-              </div>
+              {/* Accent Line */}
+              <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-blue-600 via-cyan-500 to-[#E31E24] transition-all duration-500 group-hover:w-full" />
             </Link>
           ))}
+        </div>
+
+        {/* Bottom Button */}
+        <div className="mt-5 flex justify-center sm:mt-6">
+          <Link
+            href="/login"
+            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0A2540] to-[#0f3560] px-6 py-2.5 text-sm font-bold text-white shadow-[0_10px_30px_rgba(10,37,64,0.25)] transition-all hover:shadow-[0_15px_40px_rgba(10,37,64,0.35)]"
+          >
+            View All Destinations
+            <ArrowRight
+              size={16}
+              className="transition-transform group-hover:translate-x-1"
+            />
+          </Link>
         </div>
       </div>
     </section>

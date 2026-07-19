@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
+import { Sparkles, ShieldCheck } from "lucide-react";
 import useApp from "./hooks/useApp";
 
 type Airline = {
@@ -35,161 +35,106 @@ const airlines: Airline[] = [
   { name: "AirAsia", code: "AK" },
   { name: "Korean Air", code: "KE" },
   { name: "ANA", code: "NH" },
-  { name: "Japan Airlines", code: "JL" },
 ];
 
 export default function AirlinePartners() {
   const { container } = useApp();
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const offsetRef = useRef(0); // Manual scroll offset
-
-  const tripledAirlines = useMemo(
-    () => [...airlines, ...airlines, ...airlines],
-    []
-  );
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let frameId = 0;
-    const speed = 0.5;
-
-    // Start from middle set
-    el.scrollLeft = el.scrollWidth / 3;
-
-    const animate = () => {
-      // Continuous auto-scroll + apply manual offset
-      el.scrollLeft += speed + offsetRef.current;
-      
-      // Decay manual offset gradually (smooth deceleration)
-      if (offsetRef.current !== 0) {
-        offsetRef.current *= 0.92;
-        if (Math.abs(offsetRef.current) < 0.1) offsetRef.current = 0;
-      }
-
-      const oneThird = el.scrollWidth / 3;
-      const twoThirds = oneThird * 2;
-
-      // Seamless infinite loop both directions
-      if (el.scrollLeft >= twoThirds) {
-        el.scrollLeft -= oneThird;
-      } else if (el.scrollLeft <= 0) {
-        el.scrollLeft += oneThird;
-      }
-
-      frameId = window.requestAnimationFrame(animate);
-    };
-
-    frameId = window.requestAnimationFrame(animate);
-    return () => window.cancelAnimationFrame(frameId);
-  }, []);
-
-  // Arrow click → add momentum to offset
-  const handleArrowClick = (direction: "left" | "right") => {
-    const momentum = direction === "right" ? 15 : -15;
-    offsetRef.current += momentum;
-  };
+  const displayAirlines = useMemo(() => airlines, []);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#0A2540] via-[#0d2d5a] to-[#0A2540] pt-6 pb-12 sm:pt-8 sm:pb-14">
-      {/* Background gradient orbs */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.1),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(239,68,68,0.08),transparent_26%)]" />
-      <div className="absolute top-[-10%] left-[-5%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px]" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-red-500/10 rounded-full blur-[120px]" />
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/40 to-white py-4 sm:py-6">
+      {/* Decorative Background */}
+      <div className="pointer-events-none absolute -left-32 top-16 h-72 w-72 rounded-full bg-blue-300/20 blur-[120px] sm:h-96 sm:w-96" />
+      <div className="pointer-events-none absolute -right-32 bottom-16 h-72 w-72 rounded-full bg-cyan-300/20 blur-[120px] sm:h-96 sm:w-96" />
 
-      {/* HEADER with Gradient Shadow */}
-      <div className={`${container} relative mb-6`}>
-        <div className="flex flex-col items-center text-center">
-          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl relative inline-block">
-            Trusted by Leading{" "}
-            <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-red-300 bg-clip-text text-transparent">
-              Airlines Worldwide
-            </span>
-          </h2>
+      {/* Grid pattern overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#0A2540 1px, transparent 1px), linear-gradient(90deg, #0A2540 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
-          {/* Gradient Shadow Line */}
-          <div className="mt-3 flex items-center gap-2">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-cyan-400/60" />
-            <div className="h-1 w-20 bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 rounded-full shadow-lg shadow-blue-500/50" />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-red-400/60" />
+      <div className={`${container} relative`}>
+        {/* Compact Header */}
+        {/* Compact Header */}
+<div className="mx-auto mb-3 max-w-3xl text-center sm:mb-4">
+  <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm sm:text-sm">
+    <Sparkles size={14} className="text-amber-500" />
+    Our Partners
+  </div>
+  <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl">
+    Trusted by Leading{" "}
+    <span className=" bg-black from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
+      Airlines
+    </span>
+  </h2>
+</div>
+
+        {/* Airlines Grid Card */}
+        <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-6">
+          {/* Subtle inner gradient */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-50/40 via-transparent to-cyan-50/40" />
+
+          {/* Airlines Grid */}
+          <div className="relative grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12">
+            {displayAirlines.map((airline, i) => (
+              <div
+                key={`${airline.code}-${i}`}
+                className="group relative flex flex-col items-center"
+              >
+                <div className="relative">
+                  <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 opacity-0 blur-md transition duration-300 group-hover:opacity-40" />
+
+                  <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-white p-1.5 shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-blue-500/20 sm:h-16 sm:w-16 sm:p-2">
+                    <Image
+                      src={`https://pics.avs.io/80/80/${airline.code}.png`}
+                      alt={airline.name}
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `<div class="flex items-center justify-center w-full h-full text-sm font-black text-[#0A2540]">${airline.code}</div>`;
+                        }
+                      }}
+                      unoptimized
+                    />
+                  </div>
+
+                  <div className="absolute -bottom-1 -right-1 rounded-md border border-white bg-gradient-to-br from-[#E31E24] to-red-700 px-1.5 py-0.5 text-[9px] font-black text-white shadow-md">
+                    {airline.code}
+                  </div>
+                </div>
+
+                <p className="mt-2 max-w-[70px] truncate text-center text-[10px] font-semibold text-slate-600 transition group-hover:text-blue-600 sm:text-[11px]">
+                  {airline.name}
+                </p>
+              </div>
+            ))}
           </div>
 
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-64 h-8 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-red-500/20 blur-2xl pointer-events-none" />
-        </div>
-      </div>
-
-      {/* Scrollable Airlines Container */}
-      <div className="relative">
-        <div
-          ref={scrollRef}
-          aria-label="Partner airlines"
-          className="scrollbar-hide flex gap-5 overflow-x-auto px-14 py-2 sm:px-16 lg:px-20"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {tripledAirlines.map((airline, i) => (
-            <div
-              key={`${airline.code}-${i}`}
-              className="group flex flex-col items-center flex-shrink-0"
-            >
-              {/* Round Logo Container */}
-              <div className="relative">
-                {/* Hover glow effect */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-red-500 rounded-full blur-md opacity-0 group-hover:opacity-60 transition duration-300" />
-                
-                {/* Logo circle */}
-                <div className="relative w-20 h-20 rounded-full bg-white shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-300 group-hover:scale-110 flex items-center justify-center p-2 overflow-hidden border-2 border-white/20">
-                  <Image
-                    src={`https://pics.avs.io/80/80/${airline.code}.png`}
-                    alt={airline.name}
-                    width={64}
-                    height={64}
-                    className="object-contain"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      target.style.display = "none";
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = `<div class="flex items-center justify-center w-full h-full text-base font-black text-[#0B2545]">${airline.code}</div>`;
-                      }
-                    }}
-                    unoptimized
-                  />
-                </div>
-
-                {/* IATA Code badge */}
-                <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-600 text-white shadow-md shadow-red-500/50 border border-white/20">
-                  {airline.code}
-                </div>
-              </div>
-
-              <p className="mt-3 text-[11px] font-semibold text-white/80 group-hover:text-cyan-300 transition text-center max-w-[90px] truncate">
-                {airline.name}
-              </p>
+          {/* Bottom trust bar (compact) */}
+          <div className="relative mt-4 flex flex-wrap items-center justify-center gap-2 border-t border-slate-100 pt-4 sm:mt-5 sm:gap-4 sm:pt-5">
+            <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-700">
+              <ShieldCheck size={14} />
+              IATA Certified
             </div>
-          ))}
-        </div>
-
-        {/* LEFT ARROW */}
-        <div className="absolute left-0 top-0 bottom-0 z-20 flex items-center justify-center pl-2 pr-4 bg-gradient-to-r from-[#0A2540] via-[#0A2540] to-transparent">
-          <button
-            onClick={() => handleArrowClick("left")}
-            aria-label="Scroll left"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-110 group"
-          >
-            <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
-          </button>
-        </div>
-
-        {/* RIGHT ARROW */}
-        <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center justify-center pr-2 pl-4 bg-gradient-to-l from-[#0A2540] via-[#0A2540] to-transparent">
-          <button
-            onClick={() => handleArrowClick("right")}
-            aria-label="Scroll right"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/50 transition-all duration-300 hover:scale-110 group"
-          >
-            <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
-          </button>
+            <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-700">
+              ✈️ 500+ Airlines
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-[11px] font-bold text-amber-700">
+              ⭐ 4.9 Rated
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-purple-50 px-3 py-1.5 text-[11px] font-bold text-purple-700">
+              🌍 Worldwide
+            </div>
+          </div>
         </div>
       </div>
     </section>

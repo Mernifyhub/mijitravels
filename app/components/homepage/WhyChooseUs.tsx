@@ -5,6 +5,10 @@ import {
   PlaneTakeoff,
   ShieldCheck,
   Wallet,
+  Sparkles,
+  Users,
+  Star,
+  Globe2,
 } from "lucide-react";
 import useApp from "./hooks/useApp";
 
@@ -32,7 +36,43 @@ const fallbackFeatures: Feature[] = [
   },
 ];
 
-const icons = [Wallet, Headphones, ShieldCheck, PlaneTakeoff];
+const cardData = [
+  {
+    icon: Wallet,
+    gradient: "from-blue-500 to-blue-700",
+    glow: "shadow-blue-500/30",
+    bgAccent: "bg-blue-50",
+    textAccent: "text-blue-600",
+  },
+  {
+    icon: Headphones,
+    gradient: "from-purple-500 to-purple-700",
+    glow: "shadow-purple-500/30",
+    bgAccent: "bg-purple-50",
+    textAccent: "text-purple-600",
+  },
+  {
+    icon: ShieldCheck,
+    gradient: "from-emerald-500 to-emerald-700",
+    glow: "shadow-emerald-500/30",
+    bgAccent: "bg-emerald-50",
+    textAccent: "text-emerald-600",
+  },
+  {
+    icon: PlaneTakeoff,
+    gradient: "from-orange-500 to-red-600",
+    glow: "shadow-orange-500/30",
+    bgAccent: "bg-orange-50",
+    textAccent: "text-orange-600",
+  },
+];
+
+const stats = [
+  { icon: Users, value: "2M+", label: "Happy Travelers" },
+  { icon: Globe2, value: "500+", label: "Destinations" },
+  { icon: Star, value: "4.9", label: "Rated Service" },
+  { icon: ShieldCheck, value: "100%", label: "Secure Payments" },
+];
 
 export default function WhyChooseUs() {
   const { t, container } = useApp();
@@ -43,64 +83,109 @@ export default function WhyChooseUs() {
       : fallbackFeatures;
 
   return (
-    <section className="relative overflow-hidden bg-[#f7fbff] py-4">
-      {/* Background Blur */}
-      <div className="absolute -left-28 top-16 h-80 w-80 rounded-full bg-blue-200/30 blur-[120px]" />
-      <div className="absolute -right-28 bottom-10 h-80 w-80 rounded-full bg-cyan-200/30 blur-[120px]" />
+    <section className="relative overflow-hidden bg-gradient-to-b from-white via-blue-50/40 to-white py-10 sm:py-14 lg:py-20">
+      {/* Decorative Background */}
+      <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-blue-300/20 blur-[120px] sm:h-96 sm:w-96" />
+      <div className="pointer-events-none absolute -right-32 bottom-20 h-72 w-72 rounded-full bg-cyan-300/20 blur-[120px] sm:h-96 sm:w-96" />
+
+      {/* Grid pattern overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(#0A2540 1px, transparent 1px), linear-gradient(90deg, #0A2540 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
       <div className={`${container} relative`}>
-        <div className="rounded-[36px] bg-white/70 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.07)] backdrop-blur-xl md:p-10 lg:p-12">
-          {/* Header */}
-          <div className="mx-auto mb-12 max-w-3xl text-center">
-            <h2 className="text-3xl font-black tracking-tight text-slate-900 md:text-5xl">
-              Why Professionals Choose Miji
-            </h2>
+        {/* Header */}
+        <div className="mx-auto mb-10 max-w-3xl text-center sm:mb-14">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-1.5 text-xs font-semibold text-blue-700 shadow-sm sm:text-sm">
+            <Sparkles size={14} className="text-amber-500" />
+            Why Choose Us
           </div>
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl md:text-4xl lg:text-5xl">
+            Built For{" "}
+            <span className="bg-black from-blue-600 via-cyan-500 to-blue-600 bg-clip-text text-transparent">
+              Modern Travelers
+            </span>
+          </h2>
+        </div>
 
-          {/* Cards */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((item, i) => {
-              const Icon = icons[i % icons.length];
+        {/* Feature Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+          {features.map((item, i) => {
+            const data = cardData[i % cardData.length];
+            const Icon = data.icon;
+            const num = String(i + 1).padStart(2, "0");
 
+            return (
+              <div
+                key={i}
+                className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.06)] transition-all duration-500 hover:-translate-y-2 hover:border-transparent hover:shadow-[0_20px_50px_rgba(15,23,42,0.12)] sm:rounded-3xl sm:p-6"
+              >
+                {/* Number badge (background) */}
+                <div className="pointer-events-none absolute -right-2 -top-2 select-none text-6xl font-black text-slate-100 transition-all duration-500 group-hover:text-slate-200 sm:text-7xl">
+                  {num}
+                </div>
+
+                {/* Icon */}
+                <div
+                  className={`relative mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${data.gradient} text-white shadow-lg ${data.glow} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 sm:mb-5 sm:h-14 sm:w-14 sm:rounded-2xl`}
+                >
+                  <Icon size={22} className="sm:hidden" />
+                  <Icon size={26} className="hidden sm:block" />
+                </div>
+
+                {/* Title */}
+                <h3 className="relative text-base font-bold text-slate-900 sm:text-lg">
+                  {item.title}
+                </h3>
+
+                {/* Description */}
+                <p className="relative mt-2 text-[13px] leading-6 text-slate-600 sm:mt-3 sm:text-sm sm:leading-7">
+                  {item.desc}
+                </p>
+
+                {/* Bottom accent line */}
+                <div
+                  className={`mt-4 h-1 w-8 rounded-full bg-gradient-to-r ${data.gradient} transition-all duration-500 group-hover:w-16 sm:mt-5`}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Stats Bar */}
+        <div className="mt-8 overflow-hidden rounded-2xl bg-gradient-to-r from-[#0A2540] via-[#0f3560] to-[#0A2540] p-5 shadow-[0_20px_50px_rgba(10,37,64,0.25)] sm:mt-12 sm:rounded-3xl sm:p-8">
+          {/* Decorative glow */}
+          <div className="pointer-events-none absolute -left-20 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="pointer-events-none absolute -right-20 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-cyan-500/20 blur-3xl" />
+
+          <div className="relative grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            {stats.map((stat, i) => {
+              const Icon = stat.icon;
               return (
                 <div
                   key={i}
-                  className="group rounded-[28px] bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(37,99,235,0.12)]"
+                  className="flex items-center gap-3 sm:gap-4"
                 >
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-[0_10px_25px_rgba(37,99,235,0.25)] transition-all duration-300 group-hover:scale-105">
-                    <Icon size={26} />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-cyan-300 backdrop-blur-sm sm:h-12 sm:w-12 sm:rounded-2xl">
+                    <Icon size={18} className="sm:hidden" />
+                    <Icon size={22} className="hidden sm:block" />
                   </div>
-
-                  <h3 className="text-lg font-bold text-slate-900">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-3 text-sm leading-7 text-slate-600">
-                    {item.desc}
-                  </p>
+                  <div>
+                    <div className="text-lg font-black text-white sm:text-2xl">
+                      {stat.value}
+                    </div>
+                    <div className="text-[10px] font-medium text-white/60 sm:text-xs">
+                      {stat.label}
+                    </div>
+                  </div>
                 </div>
               );
             })}
-          </div>
-
-          {/* Trust Bar */}
-          <div className="mt-10 rounded-[28px] bg-gradient-to-r from-blue-50 via-white to-cyan-50 p-6 shadow-[0_12px_35px_rgba(15,23,42,0.05)] md:p-7">
-            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h4 className="text-xl font-bold text-slate-900">
-                  Trusted By Thousands Of Travelers
-                </h4>
-
-                <p className="mt-2 text-sm leading-7 text-slate-600">
-                  Delivering reliable travel experiences with secure payments
-                  and dedicated support.
-                </p>
-              </div>
-
-              <div className="inline-flex rounded-full bg-green-100 px-5 py-2 text-sm font-bold text-green-700 shadow-sm">
-                ⭐ Excellent Rated
-              </div>
-            </div>
           </div>
         </div>
       </div>
